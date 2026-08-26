@@ -5,6 +5,7 @@ export const dictionaries = {
     appTitle: 'ブリッジPM',
     appSubtitle: 'オフショア連携プロジェクト管理',
     navTasks: 'タスク',
+    navCalendar: 'カレンダー',
     navMembers: 'メンバー',
     navMeeting: '会議時間提案',
     navGlossary: '用語集',
@@ -30,6 +31,9 @@ export const dictionaries = {
     noTasks: 'タスクはまだありません。',
     displayLang: '表示言語',
     both: '両方表示',
+
+    calendarHeading: 'カレンダー(期限)',
+    today: '今日',
 
     membersHeading: 'メンバー一覧',
     addMember: 'メンバーを追加',
@@ -72,6 +76,7 @@ export const dictionaries = {
     appTitle: 'Bridge PM',
     appSubtitle: 'Offshore Bridge Project Management',
     navTasks: 'Tasks',
+    navCalendar: 'Calendar',
     navMembers: 'Members',
     navMeeting: 'Meeting Finder',
     navGlossary: 'Glossary',
@@ -97,6 +102,9 @@ export const dictionaries = {
     noTasks: 'No tasks yet.',
     displayLang: 'Display language',
     both: 'Show both',
+
+    calendarHeading: 'Calendar (Due Dates)',
+    today: 'Today',
 
     membersHeading: 'Members',
     addMember: 'Add Member',

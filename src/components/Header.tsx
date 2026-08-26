@@ -1,11 +1,12 @@
 import { useI18n } from '../i18n/I18nContext';
 
-export type Section = 'tasks' | 'members' | 'meeting' | 'glossary';
+export type Section = 'tasks' | 'calendar' | 'members' | 'meeting' | 'glossary';
 
-const SECTIONS: Section[] = ['tasks', 'members', 'meeting', 'glossary'];
+const SECTIONS: Section[] = ['tasks', 'calendar', 'members', 'meeting', 'glossary'];
 
-const NAV_KEY: Record<Section, 'navTasks' | 'navMembers' | 'navMeeting' | 'navGlossary'> = {
+const NAV_KEY: Record<Section, 'navTasks' | 'navCalendar' | 'navMembers' | 'navMeeting' | 'navGlossary'> = {
   tasks: 'navTasks',
+  calendar: 'navCalendar',
   members: 'navMembers',
   meeting: 'navMeeting',
   glossary: 'navGlossary',

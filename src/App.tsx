@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Header, type Section } from './components/Header';
 import { TaskBoard } from './components/TaskBoard';
+import { CalendarView } from './components/CalendarView';
 import { MemberManager } from './components/MemberManager';
 import { MeetingPlanner } from './components/MeetingPlanner';
 import { Glossary } from './components/Glossary';
@@ -21,6 +22,9 @@ export default function App() {
       <Header section={section} onSectionChange={setSection} />
       <main className="mx-auto max-w-5xl px-4 py-8">
         {section === 'tasks' && <TaskBoard tasks={tasks} setTasks={setTasks} members={members} />}
+        {section === 'calendar' && (
+          <CalendarView tasks={tasks} members={members} onOpenTask={() => setSection('tasks')} />
+        )}
         {section === 'members' && <MemberManager members={members} setMembers={setMembers} />}
         {section === 'meeting' && <MeetingPlanner members={members} />}
         {section === 'glossary' && <Glossary terms={glossary} setTerms={setGlossary} />}
