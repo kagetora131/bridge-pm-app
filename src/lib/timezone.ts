@@ -22,8 +22,13 @@ export function addDaysISO(dateISO: string, days: number): string {
   return new Date(ms).toISOString().slice(0, 10);
 }
 
+/** Today's date in the browser's local calendar (not UTC — avoids an off-by-one near local midnight). */
 export function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 /**

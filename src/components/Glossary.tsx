@@ -30,7 +30,8 @@ export function Glossary({
 
   const submit = () => {
     if (!draft.termJa.trim() && !draft.termEn.trim()) return;
-    setTerms((prev) => [{ id: newId(), ...draft }, ...prev]);
+    const term: GlossaryTerm = { id: newId(), ...draft };
+    setTerms((prev) => [term, ...prev]);
     setDraft(emptyDraft);
     setShowForm(false);
   };
