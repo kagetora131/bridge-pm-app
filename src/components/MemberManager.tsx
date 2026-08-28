@@ -1,21 +1,34 @@
 import { useEffect, useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
-import { currentDateLabelInZone, currentTimeInZone, utcOffsetMinutes } from '../lib/timezone';
+import {
+  currentDateLabelInZone,
+  currentTimeInZone,
+  currentWeekdayInZone,
+  utcOffsetMinutes,
+} from '../lib/timezone';
 import { availableTimezones } from '../lib/timezoneList';
 import { newId } from '../lib/storage';
-import type { Member } from '../types';
+import { DEFAULT_WORKING_DAYS, WEEKDAY_LABELS } from '../lib/weekdays';
+import { computeWorkloads } from '../lib/workload';
+import type { Assignment, Member } from '../types';
 
 const emptyDraft = {
   name: '',
+  role: '',
   location: '',
   timezone: 'Asia/Tokyo',
   workStart: '09:00',
   workEnd: '18:00',
+  workingDays: DEFAULT_WORKING_DAYS,
+  weeklyCapacityHours: 40,
   languages: '',
 };
 
-function isWithinWorkHours(nowHHmm: string, workStart: string, workEnd: string): boolean {
-  return nowHHmm >= workStart && nowHHmm < workEnd;
+function isWorkingNow(member: Member): boolean {
+  const workingDays = member.workingDays ?? DEFAULT_WORKING_DAYS;
+  if (!workingDays.includes(currentWeekdayInZone(member.timezone))) return false;
+  const nowHHmm = currentTimeInZone(member.timezone);
+  return nowHHmm >= member.workStart && nowHHmm < member.workEnd;
 }
 
 function formatOffset(minutes: number): string {
@@ -29,9 +42,11 @@ function formatOffset(minutes: number): string {
 export function MemberManager({
   members,
   setMembers,
+  assignments,
 }: {
   members: Member[];
   setMembers: (updater: (prev: Member[]) => Member[]) => void;
+  assignments: Assignment[];
 }) {
   const { t, lang } = useI18n();
   const [showForm, setShowForm] = useState(false);
@@ -39,6 +54,8 @@ export function MemberManager({
   const [draft, setDraft] = useState(emptyDraft);
   const [, forceTick] = useState(0);
   const timezones = availableTimezones();
+  const weekdayLabels = WEEKDAY_LABELS[lang];
+  const workloads = computeWorkloads(members, assignments);
 
   useEffect(() => {
     const id = window.setInterval(() => forceTick((n) => n + 1), 30_000);
@@ -54,14 +71,26 @@ export function MemberManager({
   const startEdit = (member: Member) => {
     setDraft({
       name: member.name,
+      role: member.role ?? '',
       location: member.location,
       timezone: member.timezone,
       workStart: member.workStart,
       workEnd: member.workEnd,
+      workingDays: member.workingDays ?? DEFAULT_WORKING_DAYS,
+      weeklyCapacityHours: member.weeklyCapacityHours ?? 40,
       languages: member.languages.join(', '),
     });
     setEditingId(member.id);
     setShowForm(true);
+  };
+
+  const toggleWorkingDay = (day: number) => {
+    setDraft((prev) => ({
+      ...prev,
+      workingDays: prev.workingDays.includes(day)
+        ? prev.workingDays.filter((d) => d !== day)
+        : [...prev.workingDays, day].sort(),
+    }));
   };
 
   const submit = () => {
@@ -108,6 +137,9 @@ export function MemberManager({
             <Field label={t('name')}>
               <input className="input" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
             </Field>
+            <Field label={t('role')}>
+              <input className="input" value={draft.role} onChange={(e) => setDraft({ ...draft, role: e.target.value })} />
+            </Field>
             <Field label={t('location')}>
               <input className="input" value={draft.location} onChange={(e) => setDraft({ ...draft, location: e.target.value })} />
             </Field>
@@ -128,6 +160,15 @@ export function MemberManager({
                 onChange={(e) => setDraft({ ...draft, languages: e.target.value })}
               />
             </Field>
+            <Field label={t('weeklyCapacity')}>
+              <input
+                type="number"
+                min={0}
+                className="input"
+                value={draft.weeklyCapacityHours}
+                onChange={(e) => setDraft({ ...draft, weeklyCapacityHours: Number(e.target.value) })}
+              />
+            </Field>
             <Field label={t('workHours')}>
               <div className="flex items-center gap-2">
                 <input
@@ -143,6 +184,24 @@ export function MemberManager({
                   value={draft.workEnd}
                   onChange={(e) => setDraft({ ...draft, workEnd: e.target.value })}
                 />
+              </div>
+            </Field>
+            <Field label={t('workingDays')}>
+              <div className="flex gap-1">
+                {weekdayLabels.map((label, day) => (
+                  <button
+                    key={day}
+                    type="button"
+                    onClick={() => toggleWorkingDay(day)}
+                    className={`h-8 w-8 rounded-md border text-xs font-medium ${
+                      draft.workingDays.includes(day)
+                        ? 'border-slate-900 bg-slate-900 text-white'
+                        : 'border-slate-300 bg-white text-slate-400'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
               </div>
             </Field>
           </div>
@@ -167,19 +226,35 @@ export function MemberManager({
         <ul className="space-y-3">
           {members.map((member) => {
             const nowHHmm = currentTimeInZone(member.timezone);
-            const working = isWithinWorkHours(nowHHmm, member.workStart, member.workEnd);
+            const working = isWorkingNow(member);
+            const workload = workloads.get(member.id);
+            const workingDays = member.workingDays ?? DEFAULT_WORKING_DAYS;
             return (
               <li key={member.id} className="rounded-lg border border-slate-200 bg-white p-4">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
-                    <p className="font-medium text-slate-900">{member.name}</p>
+                    <p className="font-medium text-slate-900">
+                      {member.name}
+                      {member.role && <span className="ml-2 text-xs font-normal text-slate-400">{member.role}</span>}
+                    </p>
                     <p className="text-sm text-slate-500">
                       {member.location} · {member.timezone} ({formatOffset(utcOffsetMinutes(member.timezone))})
                     </p>
                     <p className="mt-1 text-xs text-slate-500">
-                      {t('workHours')}: {member.workStart}–{member.workEnd}
+                      {t('workHours')}: {member.workStart}–{member.workEnd} ·{' '}
+                      {WEEKDAY_LABELS[lang].filter((_, d) => workingDays.includes(d)).join('')}
                       {member.languages.length > 0 && <> · {t('languages')}: {member.languages.join(', ')}</>}
                     </p>
+                    {workload && (
+                      <p className="mt-1 flex items-center gap-2 text-xs">
+                        <span className="text-slate-500">
+                          {t('weeklyCapacity')}: {workload.totalAllocatedHours}h / {workload.capacityHours}h ({workload.utilizationPct}%)
+                        </span>
+                        {workload.isOverloaded && (
+                          <span className="rounded-full bg-rose-100 px-2 py-0.5 font-medium text-rose-700">{t('overloaded')}</span>
+                        )}
+                      </p>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-semibold tabular-nums text-slate-900">{nowHHmm}</p>

@@ -129,7 +129,12 @@ export function MeetingPlanner({ members }: { members: Member[] }) {
             <div className="space-y-3">
               {selectedMembers.map((m) => (
                 <div key={m.id}>
-                  <p className="mb-1 text-xs font-medium text-slate-600">{m.name}</p>
+                  <p className="mb-1 flex items-center gap-2 text-xs font-medium text-slate-600">
+                    {m.name}
+                    {window.perMember[m.id].length === 0 && (
+                      <span className="rounded-full bg-slate-100 px-1.5 py-0.5 font-normal text-slate-400">{t('restDay')}</span>
+                    )}
+                  </p>
                   <Bar
                     windowStart={window.windowStart}
                     windowEnd={window.windowEnd}

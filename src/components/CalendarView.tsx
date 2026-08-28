@@ -1,16 +1,16 @@
 import { useMemo, useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
 import { buildMonthGrid, chunk } from '../lib/calendar';
+import { WEEKDAY_LABELS } from '../lib/weekdays';
 import type { Member, Task, TaskStatus } from '../types';
 
 const STATUS_DOT: Record<TaskStatus, string> = {
   todo: 'bg-slate-400',
   'in-progress': 'bg-amber-500',
+  blocked: 'bg-rose-500',
   done: 'bg-emerald-500',
 };
 
-const WEEKDAYS_JA = ['日', '月', '火', '水', '木', '金', '土'];
-const WEEKDAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MAX_VISIBLE_PER_DAY = 3;
 
 export function CalendarView({
@@ -55,7 +55,7 @@ export function CalendarView({
     year: 'numeric',
     month: 'long',
   });
-  const weekdayLabels = lang === 'ja' ? WEEKDAYS_JA : WEEKDAYS_EN;
+  const weekdayLabels = WEEKDAY_LABELS[lang];
   const memberName = (id: string | null) => members.find((m) => m.id === id)?.name;
 
   return (

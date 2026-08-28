@@ -55,6 +55,11 @@ export function currentDateLabelInZone(timeZone: string, locale: string): string
   });
 }
 
+/** Current local weekday (0=Sun...6=Sat) for a timezone. */
+export function currentWeekdayInZone(timeZone: string): number {
+  return toZonedTime(new Date(), timeZone).getDay();
+}
+
 /** UTC offset in minutes for a timezone at the current instant (e.g. JST -> 540). */
 export function utcOffsetMinutes(timeZone: string): number {
   const now = new Date();

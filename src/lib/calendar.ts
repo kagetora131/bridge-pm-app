@@ -46,6 +46,13 @@ export function buildMonthGrid(year: number, month: number): CalendarDay[] {
   return cells;
 }
 
+/** Day-of-week (0=Sun...6=Sat) for a plain "yyyy-MM-dd" calendar date — a
+ * property of the date string itself, independent of any timezone. */
+export function weekdayOfISO(iso: string): number {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).getDay();
+}
+
 export function chunk<T>(items: T[], size: number): T[][] {
   const out: T[][] = [];
   for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));

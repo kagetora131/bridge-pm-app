@@ -1,5 +1,7 @@
 import type { CompromiseResult, Member, MeetingSlot } from '../types';
 import { DAY_MS, addDaysISO, localTimeToUtcMs, utcMidnight } from './timezone';
+import { weekdayOfISO } from './calendar';
+import { DEFAULT_WORKING_DAYS } from './weekdays';
 
 const SLOT_MINUTES = 30;
 const SLOT_MS = SLOT_MINUTES * 60 * 1000;
@@ -17,8 +19,10 @@ export function memberIntervalsInWindow(
   referenceDateISO: string,
 ): MeetingSlot[] {
   const intervals: MeetingSlot[] = [];
+  const workingDays = member.workingDays ?? DEFAULT_WORKING_DAYS;
   for (let offset = -1; offset <= 2; offset += 1) {
     const dateISO = addDaysISO(referenceDateISO, offset);
+    if (!workingDays.includes(weekdayOfISO(dateISO))) continue; // not a working day for this member
     const start = localTimeToUtcMs(dateISO, member.workStart, member.timezone);
     const end = localTimeToUtcMs(dateISO, member.workEnd, member.timezone);
     if (end <= start) continue; // overnight shifts not supported in MVP

@@ -1,23 +1,26 @@
 import { useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
 import { newId } from '../lib/storage';
-import type { Member, Task, TaskStatus, UILang } from '../types';
+import type { Member, Project, Task, TaskStatus, UILang } from '../types';
 
-const STATUS_ORDER: TaskStatus[] = ['todo', 'in-progress', 'done'];
-const STATUS_KEY: Record<TaskStatus, 'statusTodo' | 'statusInProgress' | 'statusDone'> = {
+const STATUS_ORDER: TaskStatus[] = ['todo', 'in-progress', 'blocked', 'done'];
+const STATUS_KEY: Record<TaskStatus, 'statusTodo' | 'statusInProgress' | 'statusBlocked' | 'statusDone'> = {
   todo: 'statusTodo',
   'in-progress': 'statusInProgress',
+  blocked: 'statusBlocked',
   done: 'statusDone',
 };
 const STATUS_COLOR: Record<TaskStatus, string> = {
   todo: 'bg-slate-100 text-slate-700',
   'in-progress': 'bg-amber-100 text-amber-800',
+  blocked: 'bg-rose-100 text-rose-800',
   done: 'bg-emerald-100 text-emerald-800',
 };
 
 type DisplayLang = UILang | 'both';
 
 const emptyDraft = {
+  projectId: '',
   titleJa: '',
   titleEn: '',
   descriptionJa: '',
@@ -25,16 +28,19 @@ const emptyDraft = {
   assigneeId: '',
   dueDate: '',
   status: 'todo' as TaskStatus,
+  dependsOn: '',
 };
 
 export function TaskBoard({
   tasks,
   setTasks,
   members,
+  projects,
 }: {
   tasks: Task[];
   setTasks: (updater: (prev: Task[]) => Task[]) => void;
   members: Member[];
+  projects: Project[];
 }) {
   const { t } = useI18n();
   const [displayLang, setDisplayLang] = useState<DisplayLang>('both');
@@ -43,6 +49,8 @@ export function TaskBoard({
   const [draft, setDraft] = useState(emptyDraft);
 
   const memberName = (id: string | null) => members.find((m) => m.id === id)?.name ?? t('unassigned');
+  const projectName = (id: string | null | undefined) => projects.find((p) => p.id === id)?.name;
+  const taskTitle = (task: Task | undefined) => task && (task.titleJa || task.titleEn);
 
   const startAdd = () => {
     setDraft(emptyDraft);
@@ -52,6 +60,7 @@ export function TaskBoard({
 
   const startEdit = (task: Task) => {
     setDraft({
+      projectId: task.projectId ?? '',
       titleJa: task.titleJa,
       titleEn: task.titleEn,
       descriptionJa: task.descriptionJa,
@@ -59,6 +68,7 @@ export function TaskBoard({
       assigneeId: task.assigneeId ?? '',
       dueDate: task.dueDate ?? '',
       status: task.status,
+      dependsOn: task.dependsOn ?? '',
     });
     setEditingId(task.id);
     setShowForm(true);
@@ -72,6 +82,7 @@ export function TaskBoard({
           task.id === editingId
             ? {
                 ...task,
+                projectId: draft.projectId || null,
                 titleJa: draft.titleJa,
                 titleEn: draft.titleEn,
                 descriptionJa: draft.descriptionJa,
@@ -79,6 +90,7 @@ export function TaskBoard({
                 assigneeId: draft.assigneeId || null,
                 dueDate: draft.dueDate || null,
                 status: draft.status,
+                dependsOn: draft.dependsOn || null,
               }
             : task,
         ),
@@ -86,6 +98,7 @@ export function TaskBoard({
     } else {
       const task: Task = {
         id: newId(),
+        projectId: draft.projectId || null,
         titleJa: draft.titleJa,
         titleEn: draft.titleEn,
         descriptionJa: draft.descriptionJa,
@@ -93,6 +106,7 @@ export function TaskBoard({
         assigneeId: draft.assigneeId || null,
         dueDate: draft.dueDate || null,
         status: draft.status,
+        dependsOn: draft.dependsOn || null,
         createdAt: new Date().toISOString(),
       };
       setTasks((prev) => [task, ...prev]);
@@ -162,6 +176,28 @@ export function TaskBoard({
       {showForm && (
         <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-4">
           <div className="grid gap-3 sm:grid-cols-2">
+            <Field label={t('project')}>
+              <select className="input" value={draft.projectId} onChange={(e) => setDraft({ ...draft, projectId: e.target.value })}>
+                <option value="">{t('noProject')}</option>
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label={t('dependsOn')}>
+              <select className="input" value={draft.dependsOn} onChange={(e) => setDraft({ ...draft, dependsOn: e.target.value })}>
+                <option value="">{t('noDependency')}</option>
+                {tasks
+                  .filter((task) => task.id !== editingId)
+                  .map((task) => (
+                    <option key={task.id} value={task.id}>
+                      {taskTitle(task)}
+                    </option>
+                  ))}
+              </select>
+            </Field>
             <Field label={t('titleJa')}>
               <input
                 className="input"
@@ -247,10 +283,16 @@ export function TaskBoard({
         <p className="text-sm text-slate-500">{t('noTasks')}</p>
       ) : (
         <ul className="space-y-3">
-          {tasks.map((task) => (
+          {tasks.map((task) => {
+            const dependency = task.dependsOn ? tasks.find((other) => other.id === task.dependsOn) : undefined;
+            const dependencyUnresolved = Boolean(dependency && dependency.status !== 'done');
+            return (
             <li key={task.id} className="rounded-lg border border-slate-200 bg-white p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
+                  {projectName(task.projectId) && (
+                    <p className="mb-0.5 text-xs font-medium text-slate-400">{projectName(task.projectId)}</p>
+                  )}
                   {renderTitle(task)}
                   {renderDescription(task)}
                   <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
@@ -259,6 +301,12 @@ export function TaskBoard({
                     <span className={`rounded-full px-2 py-0.5 font-medium ${STATUS_COLOR[task.status]}`}>
                       {t(STATUS_KEY[task.status])}
                     </span>
+                    {dependency && (
+                      <span className={dependencyUnresolved ? 'text-rose-600' : 'text-slate-400'}>
+                        {dependencyUnresolved ? '⚠ ' : ''}
+                        {t('dependsOn')}: {taskTitle(dependency)}
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex shrink-0 gap-2">
@@ -271,7 +319,8 @@ export function TaskBoard({
                 </div>
               </div>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
     </section>
