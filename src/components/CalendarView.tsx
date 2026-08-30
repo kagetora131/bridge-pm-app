@@ -58,6 +58,26 @@ export function CalendarView({
   const weekdayLabels = WEEKDAY_LABELS[lang];
   const memberName = (id: string | null) => members.find((m) => m.id === id)?.name;
 
+  // Quick-jump range: a few months back through well past the current year's
+  // December, so any month can be reached in one action instead of repeated clicks.
+  const jumpOptions = useMemo(() => {
+    const options: { value: string; label: string }[] = [];
+    for (let offset = -3; offset <= 16; offset += 1) {
+      const d = new Date(today.getFullYear(), today.getMonth() + offset, 1);
+      options.push({
+        value: `${d.getFullYear()}-${d.getMonth()}`,
+        label: d.toLocaleDateString(lang === 'ja' ? 'ja-JP' : 'en-US', { year: 'numeric', month: 'long' }),
+      });
+    }
+    return options;
+  }, [today, lang]);
+
+  const jumpToMonth = (value: string) => {
+    const [y, m] = value.split('-').map(Number);
+    setYear(y);
+    setMonth(m);
+  };
+
   return (
     <section>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -86,6 +106,18 @@ export function CalendarView({
           >
             ›
           </button>
+          <select
+            className="input w-auto"
+            value={`${year}-${month}`}
+            onChange={(e) => jumpToMonth(e.target.value)}
+            aria-label={t('jumpToMonth')}
+          >
+            {jumpOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

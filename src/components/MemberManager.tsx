@@ -22,6 +22,9 @@ const emptyDraft = {
   workingDays: DEFAULT_WORKING_DAYS,
   weeklyCapacityHours: 40,
   languages: '',
+  hourlyRateUsd: 0,
+  localCurrencyCode: '',
+  localHourlyRate: '',
 };
 
 function isWorkingNow(member: Member): boolean {
@@ -79,6 +82,9 @@ export function MemberManager({
       workingDays: member.workingDays ?? DEFAULT_WORKING_DAYS,
       weeklyCapacityHours: member.weeklyCapacityHours ?? 40,
       languages: member.languages.join(', '),
+      hourlyRateUsd: member.hourlyRateUsd ?? 0,
+      localCurrencyCode: member.localCurrencyCode ?? '',
+      localHourlyRate: member.localHourlyRate != null ? String(member.localHourlyRate) : '',
     });
     setEditingId(member.id);
     setShowForm(true);
@@ -99,17 +105,24 @@ export function MemberManager({
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean);
+    const { localCurrencyCode, localHourlyRate, ...rest } = draft;
+    const payload = {
+      ...rest,
+      languages,
+      localCurrencyCode: localCurrencyCode.trim() || undefined,
+      localHourlyRate: localHourlyRate.trim() ? Number(localHourlyRate) : undefined,
+    };
 
     if (editingId) {
       setMembers((prev) =>
         prev.map((m) =>
           m.id === editingId
-            ? { ...m, ...draft, languages }
+            ? { ...m, ...payload }
             : m,
         ),
       );
     } else {
-      const member: Member = { id: newId(), ...draft, languages };
+      const member: Member = { id: newId(), ...payload };
       setMembers((prev) => [...prev, member]);
     }
     setShowForm(false);
@@ -168,6 +181,33 @@ export function MemberManager({
                 value={draft.weeklyCapacityHours}
                 onChange={(e) => setDraft({ ...draft, weeklyCapacityHours: Number(e.target.value) })}
               />
+            </Field>
+            <Field label={t('hourlyRateUsd')}>
+              <input
+                type="number"
+                min={0}
+                className="input"
+                value={draft.hourlyRateUsd}
+                onChange={(e) => setDraft({ ...draft, hourlyRateUsd: Number(e.target.value) })}
+              />
+            </Field>
+            <Field label={t('localRateReference')}>
+              <div className="flex items-center gap-2">
+                <input
+                  className="input w-24"
+                  placeholder="JPY"
+                  value={draft.localCurrencyCode}
+                  onChange={(e) => setDraft({ ...draft, localCurrencyCode: e.target.value })}
+                />
+                <input
+                  type="number"
+                  min={0}
+                  className="input"
+                  placeholder={t('optional')}
+                  value={draft.localHourlyRate}
+                  onChange={(e) => setDraft({ ...draft, localHourlyRate: e.target.value })}
+                />
+              </div>
             </Field>
             <Field label={t('workHours')}>
               <div className="flex items-center gap-2">
@@ -255,6 +295,12 @@ export function MemberManager({
                         )}
                       </p>
                     )}
+                    <p className="mt-1 text-xs text-slate-400">
+                      {t('hourlyRateUsd')}: ${member.hourlyRateUsd ?? 0}/h
+                      {member.localCurrencyCode && member.localHourlyRate != null && (
+                        <> ({t('localRateReference')}: {member.localHourlyRate} {member.localCurrencyCode}/h)</>
+                      )}
+                    </p>
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-semibold tabular-nums text-slate-900">{nowHHmm}</p>

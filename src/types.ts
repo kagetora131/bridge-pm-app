@@ -17,6 +17,10 @@ export interface Member {
   workingDays: number[];
   weeklyCapacityHours: number;
   languages: string[]; // e.g. ["ja"], ["vi", "en"]
+  hourlyRateUsd: number; // used for all budget/burn-rate math — kept in USD so projects can mix currencies
+  /** Reference-only local-currency rate, never used in calculations (all cost math is USD-only). */
+  localCurrencyCode?: string; // e.g. "JPY", "EUR", "MXN"
+  localHourlyRate?: number;
 }
 
 export interface Project {
@@ -27,6 +31,7 @@ export interface Project {
   phase: string; // free-text current phase, e.g. "ローカライズ／PR準備"
   startDate: string | null; // "yyyy-MM-dd"
   targetRelease: string | null; // "yyyy-MM-dd"
+  totalBudgetUsd: number;
 }
 
 /** A member's staffing allocation on a project (used to detect overload). */

@@ -142,7 +142,8 @@
         "上限": 40,
         "過負荷": false
       }
-    ]
+    ],
+    "予算機能について": "各プロジェクトにbudget情報を追加。weekly_burn_rate_usdは現在のassignments(staff×時間単価)から算出。cost_per_extra_business_day_usdは「スケジュールを1営業日延長した場合の追加コスト目安」として、UI上でスライダー等により日数を増減させて追加コストをシミュレーションする機能に使う想定。"
   },
   "staff": [
     {
@@ -161,7 +162,8 @@
       ],
       "weekly_capacity_hours": 40,
       "total_allocated_hours_per_week": 40,
-      "is_overloaded": false
+      "is_overloaded": false,
+      "hourly_rate_usd": 35
     },
     {
       "id": "st02",
@@ -179,7 +181,8 @@
       ],
       "weekly_capacity_hours": 40,
       "total_allocated_hours_per_week": 40,
-      "is_overloaded": false
+      "is_overloaded": false,
+      "hourly_rate_usd": 35
     },
     {
       "id": "st03",
@@ -197,7 +200,8 @@
       ],
       "weekly_capacity_hours": 40,
       "total_allocated_hours_per_week": 40,
-      "is_overloaded": false
+      "is_overloaded": false,
+      "hourly_rate_usd": 33
     },
     {
       "id": "st04",
@@ -215,7 +219,8 @@
       ],
       "weekly_capacity_hours": 40,
       "total_allocated_hours_per_week": 40,
-      "is_overloaded": false
+      "is_overloaded": false,
+      "hourly_rate_usd": 30
     },
     {
       "id": "st05",
@@ -233,7 +238,8 @@
       ],
       "weekly_capacity_hours": 45,
       "total_allocated_hours_per_week": 45,
-      "is_overloaded": false
+      "is_overloaded": false,
+      "hourly_rate_usd": 45
     },
     {
       "id": "st06",
@@ -251,7 +257,8 @@
       ],
       "weekly_capacity_hours": 40,
       "total_allocated_hours_per_week": 45,
-      "is_overloaded": true
+      "is_overloaded": true,
+      "hourly_rate_usd": 20
     },
     {
       "id": "st07",
@@ -269,7 +276,8 @@
       ],
       "weekly_capacity_hours": 40,
       "total_allocated_hours_per_week": 40,
-      "is_overloaded": false
+      "is_overloaded": false,
+      "hourly_rate_usd": 42
     },
     {
       "id": "st08",
@@ -287,7 +295,8 @@
       ],
       "weekly_capacity_hours": 40,
       "total_allocated_hours_per_week": 30,
-      "is_overloaded": false
+      "is_overloaded": false,
+      "hourly_rate_usd": 45
     },
     {
       "id": "st09",
@@ -305,7 +314,8 @@
       ],
       "weekly_capacity_hours": 35,
       "total_allocated_hours_per_week": 20,
-      "is_overloaded": false
+      "is_overloaded": false,
+      "hourly_rate_usd": 60
     },
     {
       "id": "st10",
@@ -323,7 +333,8 @@
       ],
       "weekly_capacity_hours": 35,
       "total_allocated_hours_per_week": 40,
-      "is_overloaded": true
+      "is_overloaded": true,
+      "hourly_rate_usd": 55
     },
     {
       "id": "st11",
@@ -342,7 +353,8 @@
       "weekly_capacity_hours": 25,
       "備考": "音声収録スタジオの稼働時間に合わせた業務委託契約",
       "total_allocated_hours_per_week": 15,
-      "is_overloaded": false
+      "is_overloaded": false,
+      "hourly_rate_usd": 70
     },
     {
       "id": "st12",
@@ -360,7 +372,8 @@
       ],
       "weekly_capacity_hours": 40,
       "total_allocated_hours_per_week": 25,
-      "is_overloaded": false
+      "is_overloaded": false,
+      "hourly_rate_usd": 65
     },
     {
       "id": "st13",
@@ -379,7 +392,8 @@
       "weekly_capacity_hours": 40,
       "備考": "金・土曜が週末のため、他拠点と稼働曜日が丸ごとズレる",
       "total_allocated_hours_per_week": 30,
-      "is_overloaded": false
+      "is_overloaded": false,
+      "hourly_rate_usd": 38
     }
   ],
   "projects": [
@@ -390,7 +404,18 @@
       "status": "進行中",
       "phase": "ローカライズ／PR準備",
       "start_date": "2026-05-01",
-      "target_release": "2027-03-01"
+      "target_release": "2027-03-01",
+      "budget": {
+        "currency": "USD",
+        "total_budget_usd": 400000,
+        "weekly_burn_rate_usd": 10455,
+        "spent_to_date_usd": 179228.57,
+        "projected_total_cost_usd": 454045.71,
+        "is_over_budget_projected": true,
+        "budget_variance_usd": -54045.71,
+        "cost_per_extra_business_day_usd": 2091.0,
+        "算出前提": "開始日(2026-05-01)から目標リリース日(2027-03-01)まで現在の人員配置(週次バーンレート)が変わらないと仮定した単純計算。実際にはフェーズごとに人員構成が変わるため目安値。基準日:2026-08-29"
+      }
     },
     {
       "id": "pj02",
@@ -399,7 +424,18 @@
       "status": "進行中",
       "phase": "アート／プログラム",
       "start_date": "2026-07-01",
-      "target_release": "2027-09-01"
+      "target_release": "2027-09-01",
+      "budget": {
+        "currency": "USD",
+        "total_budget_usd": 450000,
+        "weekly_burn_rate_usd": 6135,
+        "spent_to_date_usd": 51709.29,
+        "projected_total_cost_usd": 374235.0,
+        "is_over_budget_projected": false,
+        "budget_variance_usd": 75765.0,
+        "cost_per_extra_business_day_usd": 1227.0,
+        "算出前提": "開始日(2026-07-01)から目標リリース日(2027-09-01)まで現在の人員配置(週次バーンレート)が変わらないと仮定した単純計算。実際にはフェーズごとに人員構成が変わるため目安値。基準日:2026-08-29"
+      }
     },
     {
       "id": "pj03",
@@ -408,7 +444,18 @@
       "status": "立ち上げ",
       "phase": "企画",
       "start_date": "2026-08-01",
-      "target_release": "2027-01-15"
+      "target_release": "2027-01-15",
+      "budget": {
+        "currency": "USD",
+        "total_budget_usd": 60000,
+        "weekly_burn_rate_usd": 1900,
+        "spent_to_date_usd": 7600.0,
+        "projected_total_cost_usd": 45328.57,
+        "is_over_budget_projected": false,
+        "budget_variance_usd": 14671.43,
+        "cost_per_extra_business_day_usd": 380.0,
+        "算出前提": "開始日(2026-08-01)から目標リリース日(2027-01-15)まで現在の人員配置(週次バーンレート)が変わらないと仮定した単純計算。実際にはフェーズごとに人員構成が変わるため目安値。基準日:2026-08-29"
+      }
     }
   ],
   "assignments": [

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
 import { newId } from '../lib/storage';
 import { assignmentsForProject } from '../lib/workload';
+import { computeProjectBudget, formatUsd, simulateExtensionCost, type ProjectBudget } from '../lib/budget';
+import { todayISO } from '../lib/timezone';
 import type { Assignment, Member, Project, ProjectStatus, Task } from '../types';
 
 const STATUS_ORDER: ProjectStatus[] = ['planning', 'active', 'on-hold', 'done'];
@@ -25,6 +27,7 @@ const emptyProjectDraft = {
   phase: '',
   startDate: '',
   targetRelease: '',
+  totalBudgetUsd: 0,
 };
 
 const emptyAssignmentDraft = { memberId: '', roleInProject: '', allocatedHoursPerWeek: 10 };
@@ -67,6 +70,7 @@ export function ProjectsView({
       phase: project.phase,
       startDate: project.startDate ?? '',
       targetRelease: project.targetRelease ?? '',
+      totalBudgetUsd: project.totalBudgetUsd ?? 0,
     });
     setEditingId(project.id);
     setShowForm(true);
@@ -81,6 +85,7 @@ export function ProjectsView({
       phase: draft.phase,
       startDate: draft.startDate || null,
       targetRelease: draft.targetRelease || null,
+      totalBudgetUsd: draft.totalBudgetUsd,
     };
     if (editingId) {
       setProjects((prev) => prev.map((p) => (p.id === editingId ? { ...p, ...payload } : p)));
@@ -157,6 +162,15 @@ export function ProjectsView({
             <Field label={t('targetRelease')}>
               <input type="date" className="input" value={draft.targetRelease} onChange={(e) => setDraft({ ...draft, targetRelease: e.target.value })} />
             </Field>
+            <Field label={t('totalBudgetUsd')}>
+              <input
+                type="number"
+                min={0}
+                className="input"
+                value={draft.totalBudgetUsd}
+                onChange={(e) => setDraft({ ...draft, totalBudgetUsd: Number(e.target.value) })}
+              />
+            </Field>
           </div>
           <div className="mt-4 flex gap-2">
             <button type="button" onClick={submit} className="rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700">
@@ -181,6 +195,7 @@ export function ProjectsView({
             const projectAssignments = assignmentsForProject(assignments, project.id);
             const projectTasks = tasks.filter((task) => task.projectId === project.id);
             const doneCount = projectTasks.filter((task) => task.status === 'done').length;
+            const budget = computeProjectBudget(project, assignments, members, todayISO());
 
             return (
               <li key={project.id} className="rounded-lg border border-slate-200 bg-white p-4">
@@ -201,6 +216,9 @@ export function ProjectsView({
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
+                    {budget?.isOverBudgetProjected && (
+                      <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-700">{t('overBudgetRisk')}</span>
+                    )}
                     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLOR[project.status]}`}>
                       {t(STATUS_KEY[project.status])}
                     </span>
@@ -212,6 +230,8 @@ export function ProjectsView({
                     </button>
                   </div>
                 </div>
+
+                <BudgetPanel budget={budget} totalBudgetUsd={project.totalBudgetUsd} />
 
                 <div className="mt-3 border-t border-slate-100 pt-3">
                   <div className="mb-2 flex items-center justify-between">
@@ -300,6 +320,68 @@ export function ProjectsView({
         </ul>
       )}
     </section>
+  );
+}
+
+function BudgetPanel({ budget, totalBudgetUsd }: { budget: ProjectBudget | null; totalBudgetUsd: number }) {
+  const { t } = useI18n();
+  const [extensionDays, setExtensionDays] = useState(0);
+
+  if (!budget) {
+    return (
+      <div className="mt-3 border-t border-slate-100 pt-3">
+        <p className="text-xs text-slate-400">{t('budgetNeedsSchedule')}</p>
+      </div>
+    );
+  }
+
+  const extensionCost = simulateExtensionCost(budget.costPerExtraBusinessDayUsd, extensionDays);
+
+  return (
+    <div className="mt-3 border-t border-slate-100 pt-3">
+      <p className="mb-2 text-xs font-medium text-slate-600">{t('budgetHeading')}</p>
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-4">
+        <div>
+          <dt className="text-slate-400">{t('weeklyBurnRate')}</dt>
+          <dd className="font-medium text-slate-800">{formatUsd(budget.weeklyBurnRateUsd)}/{t('week')}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-400">{t('spentToDate')}</dt>
+          <dd className="font-medium text-slate-800">{formatUsd(budget.spentToDateUsd)}</dd>
+        </div>
+        <div>
+          <dt className="text-slate-400">{t('projectedTotalCost')}</dt>
+          <dd className={`font-medium ${budget.isOverBudgetProjected ? 'text-rose-600' : 'text-slate-800'}`}>
+            {formatUsd(budget.projectedTotalCostUsd)} / {formatUsd(totalBudgetUsd)}
+          </dd>
+        </div>
+        <div>
+          <dt className="text-slate-400">{t('budgetVariance')}</dt>
+          <dd className={`font-medium ${budget.budgetVarianceUsd < 0 ? 'text-rose-600' : 'text-emerald-700'}`}>
+            {formatUsd(budget.budgetVarianceUsd)}
+          </dd>
+        </div>
+      </dl>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+        <label className="flex items-center gap-1.5">
+          <span>{t('extensionSimulate')}</span>
+          <input
+            type="number"
+            min={0}
+            className="input w-16"
+            value={extensionDays}
+            onChange={(e) => setExtensionDays(Math.max(0, Number(e.target.value)))}
+          />
+          <span>{t('extraBusinessDays')}</span>
+        </label>
+        <span>
+          → {t('additionalCost')}: <strong className="text-slate-800">{formatUsd(extensionCost)}</strong>
+        </span>
+      </div>
+
+      <p className="mt-2 text-[11px] leading-relaxed text-slate-400">{t('budgetDisclaimer')}</p>
+    </div>
   );
 }
 

@@ -10,62 +10,75 @@ export const seedMembers: Member[] = [
   {
     id: 'st01', name: '佐藤 健太', role: '企画', location: 'Tokyo, Japan', timezone: 'Asia/Tokyo',
     workStart: '09:00', workEnd: '18:00', workingDays: [1, 2, 3, 4, 5], weeklyCapacityHours: 40, languages: ['ja'],
+    hourlyRateUsd: 35,
   },
   {
     id: 'st02', name: '田中 亮', role: 'プログラム', location: 'Tokyo, Japan', timezone: 'Asia/Tokyo',
     workStart: '09:00', workEnd: '18:00', workingDays: [1, 2, 3, 4, 5], weeklyCapacityHours: 40, languages: ['ja'],
+    hourlyRateUsd: 35,
   },
   {
     id: 'st03', name: '山田 愛子', role: 'アート', location: 'Tokyo, Japan', timezone: 'Asia/Tokyo',
     workStart: '10:00', workEnd: '19:00', workingDays: [1, 2, 3, 4, 5], weeklyCapacityHours: 40, languages: ['ja'],
+    hourlyRateUsd: 33,
   },
   {
     id: 'st04', name: '望月 さくら', role: 'テスト(QA)', location: 'Tokyo, Japan', timezone: 'Asia/Tokyo',
     workStart: '09:00', workEnd: '18:00', workingDays: [1, 2, 3, 4, 5], weeklyCapacityHours: 40, languages: ['ja'],
+    hourlyRateUsd: 30,
   },
   {
     id: 'st05', name: '高橋 舞', role: 'ブリッジPM', location: 'Tokyo, Japan', timezone: 'Asia/Tokyo',
     workStart: '09:00', workEnd: '19:00', workingDays: [1, 2, 3, 4, 5], weeklyCapacityHours: 45, languages: ['ja', 'en'],
+    hourlyRateUsd: 45,
   },
   {
     id: 'st06', name: 'Sofía Hernández', role: 'ローカライズ・テスト(スペイン語圏)', location: 'Mexico City, Mexico', timezone: 'America/Mexico_City',
     workStart: '09:00', workEnd: '18:00', workingDays: [1, 2, 3, 4, 5], weeklyCapacityHours: 40, languages: ['es', 'en'],
+    hourlyRateUsd: 20,
   },
   {
     id: 'st07', name: 'Camille Dubois', role: 'テスト・ローカライズ(EU諸語)', location: 'Paris, France', timezone: 'Europe/Paris',
     workStart: '09:00', workEnd: '18:00', workingDays: [1, 2, 3, 4, 5], weeklyCapacityHours: 40, languages: ['fr', 'en'],
+    hourlyRateUsd: 42,
   },
   {
     id: 'st08', name: 'Élise Martin', role: 'EU圏PR', location: 'Paris, France', timezone: 'Europe/Paris',
     workStart: '09:30', workEnd: '18:30', workingDays: [1, 2, 3, 4, 5], weeklyCapacityHours: 40, languages: ['fr', 'en'],
+    hourlyRateUsd: 45,
   },
   {
     id: 'st09', name: 'David Kim', role: 'PR', location: 'Los Angeles, USA', timezone: 'America/Los_Angeles',
     workStart: '10:00', workEnd: '18:00', workingDays: [1, 2, 3, 4, 5], weeklyCapacityHours: 35, languages: ['en'],
+    hourlyRateUsd: 60,
   },
   {
     id: 'st10', name: 'Jessica Reyes', role: 'テスト(QA)', location: 'Los Angeles, USA', timezone: 'America/Los_Angeles',
     workStart: '09:00', workEnd: '17:00', workingDays: [1, 2, 3, 4, 5], weeklyCapacityHours: 35, languages: ['en'],
+    hourlyRateUsd: 55,
   },
   {
     id: 'st11', name: 'Marcus Bell', role: '吹替(英語音声収録)', location: 'Los Angeles, USA', timezone: 'America/Los_Angeles',
     workStart: '11:00', workEnd: '19:00', workingDays: [1, 2, 3, 4, 5], weeklyCapacityHours: 25, languages: ['en'],
+    hourlyRateUsd: 70,
   },
   {
     id: 'st12', name: 'Emily Carter', role: 'PR', location: 'New York, USA', timezone: 'America/New_York',
     workStart: '09:00', workEnd: '17:00', workingDays: [1, 2, 3, 4, 5], weeklyCapacityHours: 40, languages: ['en'],
+    hourlyRateUsd: 65,
   },
   {
     id: 'st13', name: 'Ahmed Al-Farsi', role: 'ローカライズ(アラビア語)・MENA市場事業開発', location: 'Dubai, UAE', timezone: 'Asia/Dubai',
     // Dubai weekend is Fri/Sat, not Sat/Sun — Sunday is a working day here.
     workStart: '09:00', workEnd: '17:00', workingDays: [0, 1, 2, 3, 4], weeklyCapacityHours: 40, languages: ['ar', 'en'],
+    hourlyRateUsd: 38,
   },
 ];
 
 export const seedProjects: Project[] = [
-  { id: 'pj01', name: 'サムライゴースト', genre: 'アクションRPG', status: 'active', phase: 'ローカライズ／PR準備', startDate: '2026-05-01', targetRelease: '2027-03-01' },
-  { id: 'pj02', name: 'ネオトーキョー2088', genre: 'アクション', status: 'active', phase: 'アート／プログラム', startDate: '2026-07-01', targetRelease: '2027-09-01' },
-  { id: 'pj03', name: '忍者パズルクエスト', genre: 'パズル', status: 'planning', phase: '企画', startDate: '2026-08-01', targetRelease: '2027-01-15' },
+  { id: 'pj01', name: 'サムライゴースト', genre: 'アクションRPG', status: 'active', phase: 'ローカライズ／PR準備', startDate: '2026-05-01', targetRelease: '2027-03-01', totalBudgetUsd: 400000 },
+  { id: 'pj02', name: 'ネオトーキョー2088', genre: 'アクション', status: 'active', phase: 'アート／プログラム', startDate: '2026-07-01', targetRelease: '2027-09-01', totalBudgetUsd: 450000 },
+  { id: 'pj03', name: '忍者パズルクエスト', genre: 'パズル', status: 'planning', phase: '企画', startDate: '2026-08-01', targetRelease: '2027-01-15', totalBudgetUsd: 60000 },
 ];
 
 export const seedAssignments: Assignment[] = [
