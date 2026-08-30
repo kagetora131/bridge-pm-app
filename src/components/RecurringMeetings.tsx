@@ -92,7 +92,7 @@ export function RecurringMeetings({
   const remove = (id: string) => setMeetings((prev) => prev.filter((m) => m.id !== id));
 
   return (
-    <section className="mt-10 border-t border-slate-200 pt-6">
+    <section>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">{t('recurringMeetingsHeading')}</h2>

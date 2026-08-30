@@ -85,6 +85,9 @@ export function MeetingPlanner({
 
   return (
     <section>
+      <RecurringMeetings meetings={recurringMeetings} setMeetings={setRecurringMeetings} members={members} />
+
+      <div className="mt-10 border-t border-slate-200 pt-6">
       <h2 className="text-lg font-semibold text-slate-900">{t('meetingHeading')}</h2>
       <p className="mt-1 text-sm text-slate-500">{t('meetingDesc')}</p>
 
@@ -207,8 +210,7 @@ export function MeetingPlanner({
           </div>
         )
       )}
-
-      <RecurringMeetings meetings={recurringMeetings} setMeetings={setRecurringMeetings} members={members} />
+      </div>
     </section>
   );
 }
