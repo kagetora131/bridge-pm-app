@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
 import { addDaysISO, browserTimezone, todayISO } from '../lib/timezone';
-import { availableTimezones } from '../lib/timezoneList';
+import { timezonesInUse } from '../lib/timezoneList';
 import { computeWeekOccurrences, startOfWeekISO } from '../lib/meetingWeekView';
 import { WEEKDAY_LABELS } from '../lib/weekdays';
 import type { Member, RecurringMeeting } from '../types';
@@ -13,7 +13,7 @@ export function MeetingWeekView({ meetings, members }: { meetings: RecurringMeet
   const { t, lang } = useI18n();
   const [weekStart, setWeekStart] = useState(() => startOfWeekISO(todayISO()));
   const [displayTz, setDisplayTz] = useState(browserTimezone());
-  const timezones = availableTimezones();
+  const timezones = timezonesInUse(members);
   const weekdayLabels = WEEKDAY_LABELS[lang];
 
   const weekDates = useMemo(() => Array.from({ length: 7 }, (_, i) => addDaysISO(weekStart, i)), [weekStart]);

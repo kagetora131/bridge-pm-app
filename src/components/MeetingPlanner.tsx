@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
 import { computeMeetingWindow, findBestCompromise } from '../lib/meetingSuggest';
 import { browserTimezone, formatHourLabel, todayISO } from '../lib/timezone';
-import { availableTimezones } from '../lib/timezoneList';
+import { timezonesInUse } from '../lib/timezoneList';
 import { RecurringMeetings } from './RecurringMeetings';
 import type { Member, MeetingSlot, RecurringMeeting } from '../types';
 
@@ -58,7 +58,7 @@ export function MeetingPlanner({
   const [selectedIds, setSelectedIds] = useState<string[]>(() => members.slice(0, 3).map((m) => m.id));
   const [referenceDate, setReferenceDate] = useState(todayISO());
   const [displayTz, setDisplayTz] = useState(browserTimezone());
-  const timezones = availableTimezones();
+  const timezones = timezonesInUse(members);
 
   const selectedMembers = useMemo(
     () => members.filter((m) => selectedIds.includes(m.id)),

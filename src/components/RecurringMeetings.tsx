@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
 import { newId } from '../lib/storage';
-import { availableTimezones } from '../lib/timezoneList';
+import { timezonesInUse } from '../lib/timezoneList';
 import { WEEKDAY_LABELS } from '../lib/weekdays';
 import { MeetingWeekView } from './MeetingWeekView';
 import type { Member, RecurringMeeting } from '../types';
@@ -32,12 +32,12 @@ export function RecurringMeetings({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState(emptyDraft);
   const weekdayLabels = WEEKDAY_LABELS[lang];
-  const timezones = availableTimezones();
+  const timezones = timezonesInUse(members);
 
   const memberName = (id: string) => members.find((m) => m.id === id)?.name ?? id;
 
   const startAdd = () => {
-    setDraft(emptyDraft);
+    setDraft({ ...emptyDraft, timezone: timezones[0] ?? emptyDraft.timezone });
     setEditingId(null);
     setShowForm(true);
   };
