@@ -51,10 +51,25 @@ export interface Task {
   descriptionJa: string;
   descriptionEn: string;
   assigneeId: string | null;
+  startDate: string | null; // ISO date "yyyy-MM-dd" — when work on this task begins
   dueDate: string | null; // ISO date "yyyy-MM-dd"
   status: TaskStatus;
   dependsOn: string | null; // another task's id
   createdAt: string; // ISO datetime
+}
+
+/** A standing weekly meeting (e.g. a daily-ish team sync), shown as recurring
+ * occurrences on the calendar rather than a one-off suggested slot. */
+export interface RecurringMeeting {
+  id: string;
+  title: string;
+  participantIds: string[];
+  weekday: number; // 0=Sun...6=Sat, in `timezone`
+  time: string; // "HH:mm", in `timezone`
+  timezone: string;
+  startDate: string | null; // ISO date — first occurrence; null = no lower bound
+  endDate: string | null; // ISO date — last occurrence; null = no upper bound (repeats indefinitely)
+  notes: string;
 }
 
 export interface GlossaryTerm {

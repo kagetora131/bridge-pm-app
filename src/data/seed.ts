@@ -1,4 +1,4 @@
-import type { Assignment, GlossaryTerm, Member, Project, Task } from '../types';
+import type { Assignment, GlossaryTerm, Member, Project, RecurringMeeting, Task } from '../types';
 
 // Sample data only — a fictional game-studio bridge-PM scenario, derived from
 // docs/bridge_pm_dummy_data.json. Deliberately includes a location whose
@@ -105,24 +105,65 @@ export const seedAssignments: Assignment[] = [
   { id: 'as21', memberId: 'st13', projectId: 'pj01', roleInProject: 'ローカライズ・事業開発', allocatedHoursPerWeek: 30 },
 ];
 
+// startDate is inferred (not part of the source dummy data): project start for
+// root tasks, the day after the depended-on task's due date otherwise — gives
+// the calendar's period bars something meaningful to show.
 export const seedTasks: Task[] = [
-  { id: 'tk01', projectId: 'pj01', titleJa: 'リリース版シナリオ最終稿確定', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st01', dueDate: '2026-06-01', status: 'done', dependsOn: null, createdAt: '2026-05-01T00:00:00.000Z' },
-  { id: 'tk02', projectId: 'pj01', titleJa: '英語版QAテスト', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st04', dueDate: '2026-07-15', status: 'done', dependsOn: 'tk01', createdAt: '2026-05-01T00:00:00.000Z' },
-  { id: 'tk03', projectId: 'pj01', titleJa: 'スペイン語ローカライズ・QA', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st06', dueDate: '2026-08-20', status: 'in-progress', dependsOn: 'tk02', createdAt: '2026-05-01T00:00:00.000Z' },
-  { id: 'tk04', projectId: 'pj01', titleJa: 'フランス語ほかEU諸語ローカライズ・QA', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st07', dueDate: '2026-08-25', status: 'in-progress', dependsOn: 'tk02', createdAt: '2026-05-01T00:00:00.000Z' },
-  { id: 'tk05', projectId: 'pj01', titleJa: 'アラビア語ローカライズ', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st13', dueDate: '2026-09-05', status: 'todo', dependsOn: 'tk02', createdAt: '2026-05-01T00:00:00.000Z' },
-  { id: 'tk06', projectId: 'pj01', titleJa: '英語版フルボイス収録', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st11', dueDate: '2026-09-10', status: 'todo', dependsOn: 'tk02', createdAt: '2026-05-01T00:00:00.000Z' },
-  { id: 'tk07', projectId: 'pj01', titleJa: '北米向けプロモーション計画', titleEn: '', descriptionJa: '英語吹替素材が完成するまでプロモ動画を作れずブロック中。', descriptionEn: '', assigneeId: 'st09', dueDate: '2026-09-25', status: 'blocked', dependsOn: 'tk06', createdAt: '2026-05-01T00:00:00.000Z' },
-  { id: 'tk08', projectId: 'pj01', titleJa: 'EU圏向けプロモーション計画', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st08', dueDate: '2026-09-25', status: 'todo', dependsOn: 'tk04', createdAt: '2026-05-01T00:00:00.000Z' },
-  { id: 'tk09', projectId: 'pj01', titleJa: '北米メディア向けプレスリリース', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st12', dueDate: '2026-10-01', status: 'todo', dependsOn: 'tk07', createdAt: '2026-05-01T00:00:00.000Z' },
-  { id: 'tk10', projectId: 'pj02', titleJa: '主人公キャラクターデザイン確定', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st03', dueDate: '2026-09-05', status: 'in-progress', dependsOn: null, createdAt: '2026-07-01T00:00:00.000Z' },
-  { id: 'tk11', projectId: 'pj02', titleJa: 'キャラクター実装(仮モデル)', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st02', dueDate: '2026-09-20', status: 'todo', dependsOn: 'tk10', createdAt: '2026-07-01T00:00:00.000Z' },
-  { id: 'tk12', projectId: 'pj02', titleJa: '初期ビルド動作確認', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st10', dueDate: '2026-10-01', status: 'todo', dependsOn: 'tk11', createdAt: '2026-07-01T00:00:00.000Z' },
-  { id: 'tk13', projectId: 'pj03', titleJa: '起承転結プロット第1稿', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st01', dueDate: '2026-08-20', status: 'in-progress', dependsOn: null, createdAt: '2026-08-01T00:00:00.000Z' },
+  { id: 'tk01', projectId: 'pj01', titleJa: 'リリース版シナリオ最終稿確定', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st01', startDate: '2026-05-01', dueDate: '2026-06-01', status: 'done', dependsOn: null, createdAt: '2026-05-01T00:00:00.000Z' },
+  { id: 'tk02', projectId: 'pj01', titleJa: '英語版QAテスト', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st04', startDate: '2026-06-02', dueDate: '2026-07-15', status: 'done', dependsOn: 'tk01', createdAt: '2026-05-01T00:00:00.000Z' },
+  { id: 'tk03', projectId: 'pj01', titleJa: 'スペイン語ローカライズ・QA', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st06', startDate: '2026-07-16', dueDate: '2026-08-20', status: 'in-progress', dependsOn: 'tk02', createdAt: '2026-05-01T00:00:00.000Z' },
+  { id: 'tk04', projectId: 'pj01', titleJa: 'フランス語ほかEU諸語ローカライズ・QA', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st07', startDate: '2026-07-16', dueDate: '2026-08-25', status: 'in-progress', dependsOn: 'tk02', createdAt: '2026-05-01T00:00:00.000Z' },
+  { id: 'tk05', projectId: 'pj01', titleJa: 'アラビア語ローカライズ', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st13', startDate: '2026-07-16', dueDate: '2026-09-05', status: 'todo', dependsOn: 'tk02', createdAt: '2026-05-01T00:00:00.000Z' },
+  { id: 'tk06', projectId: 'pj01', titleJa: '英語版フルボイス収録', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st11', startDate: '2026-07-16', dueDate: '2026-09-10', status: 'todo', dependsOn: 'tk02', createdAt: '2026-05-01T00:00:00.000Z' },
+  { id: 'tk07', projectId: 'pj01', titleJa: '北米向けプロモーション計画', titleEn: '', descriptionJa: '英語吹替素材が完成するまでプロモ動画を作れずブロック中。', descriptionEn: '', assigneeId: 'st09', startDate: '2026-09-11', dueDate: '2026-09-25', status: 'blocked', dependsOn: 'tk06', createdAt: '2026-05-01T00:00:00.000Z' },
+  { id: 'tk08', projectId: 'pj01', titleJa: 'EU圏向けプロモーション計画', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st08', startDate: '2026-08-26', dueDate: '2026-09-25', status: 'todo', dependsOn: 'tk04', createdAt: '2026-05-01T00:00:00.000Z' },
+  { id: 'tk09', projectId: 'pj01', titleJa: '北米メディア向けプレスリリース', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st12', startDate: '2026-09-26', dueDate: '2026-10-01', status: 'todo', dependsOn: 'tk07', createdAt: '2026-05-01T00:00:00.000Z' },
+  { id: 'tk10', projectId: 'pj02', titleJa: '主人公キャラクターデザイン確定', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st03', startDate: '2026-07-01', dueDate: '2026-09-05', status: 'in-progress', dependsOn: null, createdAt: '2026-07-01T00:00:00.000Z' },
+  { id: 'tk11', projectId: 'pj02', titleJa: 'キャラクター実装(仮モデル)', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st02', startDate: '2026-09-06', dueDate: '2026-09-20', status: 'todo', dependsOn: 'tk10', createdAt: '2026-07-01T00:00:00.000Z' },
+  { id: 'tk12', projectId: 'pj02', titleJa: '初期ビルド動作確認', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st10', startDate: '2026-09-21', dueDate: '2026-10-01', status: 'todo', dependsOn: 'tk11', createdAt: '2026-07-01T00:00:00.000Z' },
+  { id: 'tk13', projectId: 'pj03', titleJa: '起承転結プロット第1稿', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st01', startDate: '2026-08-01', dueDate: '2026-08-20', status: 'in-progress', dependsOn: null, createdAt: '2026-08-01T00:00:00.000Z' },
 ];
 
 export const seedGlossary: GlossaryTerm[] = [
   { id: 'seed-term-1', termJa: '手戻り', termEn: 'rework', note: '仕様誤解などによるやり直し作業' },
   { id: 'seed-term-2', termJa: '要件定義', termEn: 'requirements definition', note: '' },
   { id: 'seed-term-3', termJa: '結合テスト', termEn: 'integration testing', note: '' },
+];
+
+// Some departments (localization/QA, PR) run near-weekly or near-daily syncs
+// at a fixed slot — represented here as one weekly-recurring entry each.
+export const seedRecurringMeetings: RecurringMeeting[] = [
+  {
+    id: 'rm01',
+    title: 'ブリッジ定例MTG',
+    participantIds: ['st05', 'st01', 'st02'],
+    weekday: 1, // Mon
+    time: '10:00',
+    timezone: 'Asia/Tokyo',
+    startDate: '2026-05-04',
+    endDate: null,
+    notes: '週次の全体進捗共有',
+  },
+  {
+    id: 'rm02',
+    title: 'ローカライズ/QA進捗確認',
+    participantIds: ['st05', 'st06', 'st07', 'st13'],
+    weekday: 3, // Wed
+    time: '17:00',
+    timezone: 'Asia/Tokyo',
+    startDate: '2026-05-06',
+    endDate: null,
+    notes: 'スペイン語・EU諸語・アラビア語ローカライズチームとの定例',
+  },
+  {
+    id: 'rm03',
+    title: 'PRチーム進捗共有',
+    participantIds: ['st09', 'st12', 'st08', 'st05'],
+    weekday: 2, // Tue
+    time: '09:00',
+    timezone: 'America/Los_Angeles',
+    startDate: '2026-05-05',
+    endDate: null,
+    notes: 'ほぼ毎日やり取りしている部門のため、この時間帯を固定の定例として登録',
+  },
 ];

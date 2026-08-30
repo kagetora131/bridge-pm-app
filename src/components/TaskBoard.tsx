@@ -26,6 +26,7 @@ const emptyDraft = {
   descriptionJa: '',
   descriptionEn: '',
   assigneeId: '',
+  startDate: '',
   dueDate: '',
   status: 'todo' as TaskStatus,
   dependsOn: '',
@@ -66,6 +67,7 @@ export function TaskBoard({
       descriptionJa: task.descriptionJa,
       descriptionEn: task.descriptionEn,
       assigneeId: task.assigneeId ?? '',
+      startDate: task.startDate ?? '',
       dueDate: task.dueDate ?? '',
       status: task.status,
       dependsOn: task.dependsOn ?? '',
@@ -88,6 +90,7 @@ export function TaskBoard({
                 descriptionJa: draft.descriptionJa,
                 descriptionEn: draft.descriptionEn,
                 assigneeId: draft.assigneeId || null,
+                startDate: draft.startDate || null,
                 dueDate: draft.dueDate || null,
                 status: draft.status,
                 dependsOn: draft.dependsOn || null,
@@ -104,6 +107,7 @@ export function TaskBoard({
         descriptionJa: draft.descriptionJa,
         descriptionEn: draft.descriptionEn,
         assigneeId: draft.assigneeId || null,
+        startDate: draft.startDate || null,
         dueDate: draft.dueDate || null,
         status: draft.status,
         dependsOn: draft.dependsOn || null,
@@ -242,6 +246,14 @@ export function TaskBoard({
                 ))}
               </select>
             </Field>
+            <Field label={t('startDate')}>
+              <input
+                type="date"
+                className="input"
+                value={draft.startDate}
+                onChange={(e) => setDraft({ ...draft, startDate: e.target.value })}
+              />
+            </Field>
             <Field label={t('dueDate')}>
               <input
                 type="date"
@@ -297,7 +309,12 @@ export function TaskBoard({
                   {renderDescription(task)}
                   <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
                     <span>{t('assignee')}: {memberName(task.assigneeId)}</span>
-                    {task.dueDate && <span>{t('dueDate')}: {task.dueDate}</span>}
+                    {task.dueDate && (
+                      <span>
+                        {task.startDate ? t('period') : t('dueDate')}:{' '}
+                        {task.startDate ? `${task.startDate} 〜 ${task.dueDate}` : task.dueDate}
+                      </span>
+                    )}
                     <span className={`rounded-full px-2 py-0.5 font-medium ${STATUS_COLOR[task.status]}`}>
                       {t(STATUS_KEY[task.status])}
                     </span>

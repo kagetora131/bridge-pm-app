@@ -70,8 +70,9 @@ export const dictionaries = {
     noTasks: 'タスクはまだありません。',
     displayLang: '表示言語',
     both: '両方表示',
+    period: '期間',
 
-    calendarHeading: 'カレンダー(期限)',
+    calendarHeading: 'カレンダー',
     today: '今日',
     jumpToMonth: '月を選択',
 
@@ -109,6 +110,20 @@ export const dictionaries = {
     selectAtLeastOne: 'メンバーを1人以上選んでください。',
     timelineLegend: '塗りつぶし = 稼働時間 / 縦線 = 提案時間帯',
     restDay: '稼働日ではありません',
+
+    recurringMeetingsHeading: '定例会議',
+    recurringMeetingsDesc: '毎週同じ曜日・時間に行う会議を登録し、カレンダーに表示します。',
+    addRecurringMeeting: '定例会議を追加',
+    meetingTitle: '会議名',
+    recurrenceTimezone: '基準タイムゾーン',
+    weekday: '曜日',
+    meetingTime: '時刻',
+    recurrenceStart: '開始日(任意)',
+    recurrenceEnd: '終了日(任意)',
+    participants: '参加者',
+    noRecurringMeetings: '定例会議はまだ登録されていません。',
+    every: '毎週',
+    noEnd: '終了日なし',
 
     glossaryHeading: '技術用語集',
     addTerm: '用語を追加',
@@ -189,8 +204,9 @@ export const dictionaries = {
     noTasks: 'No tasks yet.',
     displayLang: 'Display language',
     both: 'Show both',
+    period: 'Period',
 
-    calendarHeading: 'Calendar (Due Dates)',
+    calendarHeading: 'Calendar',
     today: 'Today',
     jumpToMonth: 'Jump to month',
 
@@ -228,6 +244,20 @@ export const dictionaries = {
     selectAtLeastOne: 'Please select at least one member.',
     timelineLegend: 'Filled bar = working hours / vertical line = suggested slot',
     restDay: 'Not a working day',
+
+    recurringMeetingsHeading: 'Recurring Meetings',
+    recurringMeetingsDesc: 'Register meetings that repeat weekly on the same day and time — they show up on the calendar.',
+    addRecurringMeeting: 'Add Recurring Meeting',
+    meetingTitle: 'Meeting Title',
+    recurrenceTimezone: 'Reference Timezone',
+    weekday: 'Weekday',
+    meetingTime: 'Time',
+    recurrenceStart: 'Start Date (optional)',
+    recurrenceEnd: 'End Date (optional)',
+    participants: 'Participants',
+    noRecurringMeetings: 'No recurring meetings yet.',
+    every: 'Every',
+    noEnd: 'No end date',
 
     glossaryHeading: 'Technical Glossary',
     addTerm: 'Add Term',

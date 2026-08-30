@@ -8,8 +8,15 @@ import { MeetingPlanner } from './components/MeetingPlanner';
 import { Glossary } from './components/Glossary';
 import { useI18n } from './i18n/I18nContext';
 import { usePersistentState } from './hooks/usePersistentState';
-import { seedAssignments, seedGlossary, seedMembers, seedProjects, seedTasks } from './data/seed';
-import type { Assignment, GlossaryTerm, Member, Project, Task } from './types';
+import {
+  seedAssignments,
+  seedGlossary,
+  seedMembers,
+  seedProjects,
+  seedRecurringMeetings,
+  seedTasks,
+} from './data/seed';
+import type { Assignment, GlossaryTerm, Member, Project, RecurringMeeting, Task } from './types';
 
 export default function App() {
   const { t } = useI18n();
@@ -19,6 +26,10 @@ export default function App() {
   const [tasks, setTasks] = usePersistentState<Task[]>('tasks', seedTasks);
   const [members, setMembers] = usePersistentState<Member[]>('members', seedMembers);
   const [glossary, setGlossary] = usePersistentState<GlossaryTerm[]>('glossary', seedGlossary);
+  const [recurringMeetings, setRecurringMeetings] = usePersistentState<RecurringMeeting[]>(
+    'recurringMeetings',
+    seedRecurringMeetings,
+  );
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -38,12 +49,24 @@ export default function App() {
           <TaskBoard tasks={tasks} setTasks={setTasks} members={members} projects={projects} />
         )}
         {section === 'calendar' && (
-          <CalendarView tasks={tasks} members={members} onOpenTask={() => setSection('tasks')} />
+          <CalendarView
+            tasks={tasks}
+            members={members}
+            recurringMeetings={recurringMeetings}
+            onOpenTask={() => setSection('tasks')}
+            onOpenMeeting={() => setSection('meeting')}
+          />
         )}
         {section === 'members' && (
           <MemberManager members={members} setMembers={setMembers} assignments={assignments} />
         )}
-        {section === 'meeting' && <MeetingPlanner members={members} />}
+        {section === 'meeting' && (
+          <MeetingPlanner
+            members={members}
+            recurringMeetings={recurringMeetings}
+            setRecurringMeetings={setRecurringMeetings}
+          />
+        )}
         {section === 'glossary' && <Glossary terms={glossary} setTerms={setGlossary} />}
       </main>
       <footer className="mx-auto max-w-5xl px-4 pb-8 text-xs text-slate-400">{t('footerNote')}</footer>

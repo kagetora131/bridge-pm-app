@@ -3,7 +3,8 @@ import { useI18n } from '../i18n/I18nContext';
 import { computeMeetingWindow, findBestCompromise } from '../lib/meetingSuggest';
 import { browserTimezone, formatHourLabel, todayISO } from '../lib/timezone';
 import { availableTimezones } from '../lib/timezoneList';
-import type { Member, MeetingSlot } from '../types';
+import { RecurringMeetings } from './RecurringMeetings';
+import type { Member, MeetingSlot, RecurringMeeting } from '../types';
 
 function rangeLabel(slot: MeetingSlot, tz: string): string {
   return `${formatHourLabel(slot.startMs, tz)} – ${formatHourLabel(slot.endMs, tz)}`;
@@ -44,7 +45,15 @@ function Bar({
   );
 }
 
-export function MeetingPlanner({ members }: { members: Member[] }) {
+export function MeetingPlanner({
+  members,
+  recurringMeetings,
+  setRecurringMeetings,
+}: {
+  members: Member[];
+  recurringMeetings: RecurringMeeting[];
+  setRecurringMeetings: (updater: (prev: RecurringMeeting[]) => RecurringMeeting[]) => void;
+}) {
   const { t } = useI18n();
   const [selectedIds, setSelectedIds] = useState<string[]>(() => members.slice(0, 3).map((m) => m.id));
   const [referenceDate, setReferenceDate] = useState(todayISO());
@@ -198,6 +207,8 @@ export function MeetingPlanner({ members }: { members: Member[] }) {
           </div>
         )
       )}
+
+      <RecurringMeetings meetings={recurringMeetings} setMeetings={setRecurringMeetings} members={members} />
     </section>
   );
 }
