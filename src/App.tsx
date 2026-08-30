@@ -49,13 +49,7 @@ export default function App() {
           <TaskBoard tasks={tasks} setTasks={setTasks} members={members} projects={projects} />
         )}
         {section === 'calendar' && (
-          <CalendarView
-            tasks={tasks}
-            members={members}
-            recurringMeetings={recurringMeetings}
-            onOpenTask={() => setSection('tasks')}
-            onOpenMeeting={() => setSection('meeting')}
-          />
+          <CalendarView tasks={tasks} members={members} projects={projects} onOpenTask={() => setSection('tasks')} />
         )}
         {section === 'members' && (
           <MemberManager members={members} setMembers={setMembers} assignments={assignments} />

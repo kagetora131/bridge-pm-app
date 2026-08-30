@@ -66,6 +66,7 @@ export interface RecurringMeeting {
   participantIds: string[];
   weekday: number; // 0=Sun...6=Sat, in `timezone`
   time: string; // "HH:mm", in `timezone`
+  durationMinutes: number;
   timezone: string;
   startDate: string | null; // ISO date — first occurrence; null = no lower bound
   endDate: string | null; // ISO date — last occurrence; null = no upper bound (repeats indefinitely)

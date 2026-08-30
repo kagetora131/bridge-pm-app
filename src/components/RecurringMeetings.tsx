@@ -3,6 +3,7 @@ import { useI18n } from '../i18n/I18nContext';
 import { newId } from '../lib/storage';
 import { availableTimezones } from '../lib/timezoneList';
 import { WEEKDAY_LABELS } from '../lib/weekdays';
+import { MeetingWeekView } from './MeetingWeekView';
 import type { Member, RecurringMeeting } from '../types';
 
 const emptyDraft = {
@@ -10,6 +11,7 @@ const emptyDraft = {
   participantIds: [] as string[],
   weekday: 1,
   time: '10:00',
+  durationMinutes: 60,
   timezone: 'Asia/Tokyo',
   startDate: '',
   endDate: '',
@@ -46,6 +48,7 @@ export function RecurringMeetings({
       participantIds: meeting.participantIds,
       weekday: meeting.weekday,
       time: meeting.time,
+      durationMinutes: meeting.durationMinutes ?? 60,
       timezone: meeting.timezone,
       startDate: meeting.startDate ?? '',
       endDate: meeting.endDate ?? '',
@@ -71,6 +74,7 @@ export function RecurringMeetings({
       participantIds: draft.participantIds,
       weekday: draft.weekday,
       time: draft.time,
+      durationMinutes: draft.durationMinutes,
       timezone: draft.timezone,
       startDate: draft.startDate || null,
       endDate: draft.endDate || null,
@@ -130,6 +134,16 @@ export function RecurringMeetings({
             <Field label={t('meetingTime')}>
               <input type="time" className="input" value={draft.time} onChange={(e) => setDraft({ ...draft, time: e.target.value })} />
             </Field>
+            <Field label={t('durationMinutes')}>
+              <input
+                type="number"
+                min={15}
+                step={15}
+                className="input"
+                value={draft.durationMinutes}
+                onChange={(e) => setDraft({ ...draft, durationMinutes: Number(e.target.value) })}
+              />
+            </Field>
             <Field label={t('recurrenceStart')}>
               <input type="date" className="input" value={draft.startDate} onChange={(e) => setDraft({ ...draft, startDate: e.target.value })} />
             </Field>
@@ -163,6 +177,12 @@ export function RecurringMeetings({
               {t('cancel')}
             </button>
           </div>
+        </div>
+      )}
+
+      {meetings.length > 0 && (
+        <div className="mb-6">
+          <MeetingWeekView meetings={meetings} members={members} />
         </div>
       )}
 

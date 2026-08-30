@@ -139,6 +139,7 @@ export const seedRecurringMeetings: RecurringMeeting[] = [
     participantIds: ['st05', 'st01', 'st02'],
     weekday: 1, // Mon
     time: '10:00',
+    durationMinutes: 30,
     timezone: 'Asia/Tokyo',
     startDate: '2026-05-04',
     endDate: null,
@@ -150,6 +151,7 @@ export const seedRecurringMeetings: RecurringMeeting[] = [
     participantIds: ['st05', 'st06', 'st07', 'st13'],
     weekday: 3, // Wed
     time: '17:00',
+    durationMinutes: 45,
     timezone: 'Asia/Tokyo',
     startDate: '2026-05-06',
     endDate: null,
@@ -161,6 +163,7 @@ export const seedRecurringMeetings: RecurringMeeting[] = [
     participantIds: ['st09', 'st12', 'st08', 'st05'],
     weekday: 2, // Tue
     time: '09:00',
+    durationMinutes: 30,
     timezone: 'America/Los_Angeles',
     startDate: '2026-05-05',
     endDate: null,

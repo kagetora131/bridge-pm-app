@@ -75,6 +75,10 @@ export const dictionaries = {
     calendarHeading: 'カレンダー',
     today: '今日',
     jumpToMonth: '月を選択',
+    allProjects: '全プロジェクト',
+    progressDisclaimer: '※ %は経過日数から算出した目安の進捗ペースです(実績の入力はありません)。ブロック中のタスクは%の代わりに状態を表示します。',
+    thisWeek: '今週',
+    durationMinutes: '所要時間(分)',
 
     membersHeading: 'メンバー一覧',
     addMember: 'メンバーを追加',
@@ -209,6 +213,10 @@ export const dictionaries = {
     calendarHeading: 'Calendar',
     today: 'Today',
     jumpToMonth: 'Jump to month',
+    allProjects: 'All Projects',
+    progressDisclaimer: '※ The % is a rough pace estimate based on elapsed days (no actual progress is recorded). Blocked tasks show their status instead of a percentage.',
+    thisWeek: 'This Week',
+    durationMinutes: 'Duration (min)',
 
     membersHeading: 'Members',
     addMember: 'Add Member',
