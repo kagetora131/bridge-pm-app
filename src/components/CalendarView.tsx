@@ -30,12 +30,16 @@ export function CalendarView({
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [projectFilter, setProjectFilter] = useState<string>('all');
+  const [memberFilter, setMemberFilter] = useState<string>('all');
 
   const weeks = useMemo(() => chunk(buildMonthGrid(year, month), 7), [year, month]);
 
   const visibleTasks = useMemo(
-    () => (projectFilter === 'all' ? tasks : tasks.filter((task) => task.projectId === projectFilter)),
-    [tasks, projectFilter],
+    () =>
+      tasks
+        .filter((task) => projectFilter === 'all' || task.projectId === projectFilter)
+        .filter((task) => memberFilter === 'all' || task.assigneeId === memberFilter),
+    [tasks, projectFilter, memberFilter],
   );
 
   const shiftMonth = (delta: number) => {
@@ -81,6 +85,14 @@ export function CalendarView({
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-slate-900">{t('calendarHeading')}</h2>
         <div className="flex flex-wrap items-center gap-2">
+          <select className="input w-auto" value={memberFilter} onChange={(e) => setMemberFilter(e.target.value)}>
+            <option value="all">{t('allMembers')}</option>
+            {members.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.name}
+              </option>
+            ))}
+          </select>
           <select className="input w-auto" value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)}>
             <option value="all">{t('allProjects')}</option>
             {projects.map((p) => (

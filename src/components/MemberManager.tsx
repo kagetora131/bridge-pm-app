@@ -10,7 +10,8 @@ import { availableTimezones } from '../lib/timezoneList';
 import { newId } from '../lib/storage';
 import { DEFAULT_WORKING_DAYS, WEEKDAY_LABELS } from '../lib/weekdays';
 import { computeWorkloads } from '../lib/workload';
-import type { Assignment, Member } from '../types';
+import { MemberTaskList } from './MemberTaskList';
+import type { Assignment, Member, Project, Task } from '../types';
 
 const emptyDraft = {
   name: '',
@@ -46,10 +47,16 @@ export function MemberManager({
   members,
   setMembers,
   assignments,
+  tasks,
+  setTasks,
+  projects,
 }: {
   members: Member[];
   setMembers: (updater: (prev: Member[]) => Member[]) => void;
   assignments: Assignment[];
+  tasks: Task[];
+  setTasks: (updater: (prev: Task[]) => Task[]) => void;
+  projects: Project[];
 }) {
   const { t, lang } = useI18n();
   const [showForm, setShowForm] = useState(false);
@@ -322,6 +329,7 @@ export function MemberManager({
                     {t('delete')}
                   </button>
                 </div>
+                <MemberTaskList memberId={member.id} allTasks={tasks} setTasks={setTasks} projects={projects} />
               </li>
             );
           })}

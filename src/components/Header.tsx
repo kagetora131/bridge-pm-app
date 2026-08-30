@@ -1,12 +1,12 @@
 import { useI18n } from '../i18n/I18nContext';
+import { resetToSampleData } from '../lib/seedVersion';
 
-export type Section = 'projects' | 'tasks' | 'calendar' | 'members' | 'meeting' | 'glossary';
+export type Section = 'projects' | 'calendar' | 'members' | 'meeting' | 'glossary';
 
-const SECTIONS: Section[] = ['projects', 'tasks', 'calendar', 'members', 'meeting', 'glossary'];
+const SECTIONS: Section[] = ['projects', 'calendar', 'members', 'meeting', 'glossary'];
 
-const NAV_KEY: Record<Section, 'navProjects' | 'navTasks' | 'navCalendar' | 'navMembers' | 'navMeeting' | 'navGlossary'> = {
+const NAV_KEY: Record<Section, 'navProjects' | 'navCalendar' | 'navMembers' | 'navMeeting' | 'navGlossary'> = {
   projects: 'navProjects',
-  tasks: 'navTasks',
   calendar: 'navCalendar',
   members: 'navMembers',
   meeting: 'navMeeting',
@@ -21,6 +21,12 @@ export function Header({
   onSectionChange: (s: Section) => void;
 }) {
   const { t, lang, setLang } = useI18n();
+
+  const handleReset = () => {
+    if (window.confirm(t('resetConfirm'))) {
+      resetToSampleData();
+    }
+  };
 
   return (
     <header className="border-b border-slate-200 bg-white">
@@ -46,6 +52,14 @@ export function Header({
               </button>
             ))}
           </nav>
+          <button
+            type="button"
+            onClick={handleReset}
+            title={t('resetSampleData')}
+            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-500 hover:bg-slate-50"
+          >
+            {t('resetSampleData')}
+          </button>
           <button
             type="button"
             onClick={() => setLang(lang === 'ja' ? 'en' : 'ja')}

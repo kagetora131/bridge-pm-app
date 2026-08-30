@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { Header, type Section } from './components/Header';
 import { ProjectsView } from './components/ProjectsView';
-import { TaskBoard } from './components/TaskBoard';
 import { CalendarView } from './components/CalendarView';
 import { MemberManager } from './components/MemberManager';
 import { MeetingPlanner } from './components/MeetingPlanner';
 import { Glossary } from './components/Glossary';
 import { useI18n } from './i18n/I18nContext';
 import { usePersistentState } from './hooks/usePersistentState';
+import { ensureLatestSeed } from './lib/seedVersion';
 import {
   seedAssignments,
   seedGlossary,
@@ -18,9 +18,14 @@ import {
 } from './data/seed';
 import type { Assignment, GlossaryTerm, Member, Project, RecurringMeeting, Task } from './types';
 
+// Runs before the usePersistentState hooks below read localStorage, so a
+// sample-data version bump takes effect on this very render rather than
+// requiring a manual clear. Idempotent, so StrictMode's double-invoke is safe.
+ensureLatestSeed();
+
 export default function App() {
   const { t } = useI18n();
-  const [section, setSection] = useState<Section>('tasks');
+  const [section, setSection] = useState<Section>('projects');
   const [projects, setProjects] = usePersistentState<Project[]>('projects', seedProjects);
   const [assignments, setAssignments] = usePersistentState<Assignment[]>('assignments', seedAssignments);
   const [tasks, setTasks] = usePersistentState<Task[]>('tasks', seedTasks);
@@ -45,14 +50,23 @@ export default function App() {
             tasks={tasks}
           />
         )}
-        {section === 'tasks' && (
-          <TaskBoard tasks={tasks} setTasks={setTasks} members={members} projects={projects} />
-        )}
         {section === 'calendar' && (
-          <CalendarView tasks={tasks} members={members} projects={projects} onOpenTask={() => setSection('tasks')} />
+          <CalendarView
+            tasks={tasks}
+            members={members}
+            projects={projects}
+            onOpenTask={() => setSection('members')}
+          />
         )}
         {section === 'members' && (
-          <MemberManager members={members} setMembers={setMembers} assignments={assignments} />
+          <MemberManager
+            members={members}
+            setMembers={setMembers}
+            assignments={assignments}
+            tasks={tasks}
+            setTasks={setTasks}
+            projects={projects}
+          />
         )}
         {section === 'meeting' && (
           <MeetingPlanner

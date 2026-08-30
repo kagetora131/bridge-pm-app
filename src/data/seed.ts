@@ -118,9 +118,14 @@ export const seedTasks: Task[] = [
   { id: 'tk07', projectId: 'pj01', titleJa: '北米向けプロモーション計画', titleEn: '', descriptionJa: '英語吹替素材が完成するまでプロモ動画を作れずブロック中。', descriptionEn: '', assigneeId: 'st09', startDate: '2026-09-11', dueDate: '2026-09-25', status: 'blocked', dependsOn: 'tk06', createdAt: '2026-05-01T00:00:00.000Z' },
   { id: 'tk08', projectId: 'pj01', titleJa: 'EU圏向けプロモーション計画', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st08', startDate: '2026-08-26', dueDate: '2026-09-25', status: 'todo', dependsOn: 'tk04', createdAt: '2026-05-01T00:00:00.000Z' },
   { id: 'tk09', projectId: 'pj01', titleJa: '北米メディア向けプレスリリース', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st12', startDate: '2026-09-26', dueDate: '2026-10-01', status: 'todo', dependsOn: 'tk07', createdAt: '2026-05-01T00:00:00.000Z' },
-  { id: 'tk10', projectId: 'pj02', titleJa: '主人公キャラクターデザイン確定', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st03', startDate: '2026-07-01', dueDate: '2026-09-05', status: 'in-progress', dependsOn: null, createdAt: '2026-07-01T00:00:00.000Z' },
-  { id: 'tk11', projectId: 'pj02', titleJa: 'キャラクター実装(仮モデル)', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st02', startDate: '2026-09-06', dueDate: '2026-09-20', status: 'todo', dependsOn: 'tk10', createdAt: '2026-07-01T00:00:00.000Z' },
-  { id: 'tk12', projectId: 'pj02', titleJa: '初期ビルド動作確認', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st10', startDate: '2026-09-21', dueDate: '2026-10-01', status: 'todo', dependsOn: 'tk11', createdAt: '2026-07-01T00:00:00.000Z' },
+  // ネオトーキョー2088 (pj02) — a clean example of the full localization
+  // pipeline: art → program integration → translation (in parallel) →
+  // reflecting the translated text into the build → QA on the localized build.
+  { id: 'tk10', projectId: 'pj02', titleJa: 'アート素材制作(主人公キャラクターデザイン確定)', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st03', startDate: '2026-07-01', dueDate: '2026-09-05', status: 'in-progress', dependsOn: null, createdAt: '2026-07-01T00:00:00.000Z' },
+  { id: 'tk11', projectId: 'pj02', titleJa: 'プログラムへのキャラクター組み込み', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st02', startDate: '2026-09-06', dueDate: '2026-09-20', status: 'todo', dependsOn: 'tk10', createdAt: '2026-07-01T00:00:00.000Z' },
+  { id: 'tk14', projectId: 'pj02', titleJa: 'スペイン語翻訳', titleEn: '', descriptionJa: 'アートやプログラム組み込みと並行して進行できるテキスト翻訳。', descriptionEn: '', assigneeId: 'st06', startDate: '2026-07-15', dueDate: '2026-08-31', status: 'in-progress', dependsOn: null, createdAt: '2026-07-01T00:00:00.000Z' },
+  { id: 'tk15', projectId: 'pj02', titleJa: '翻訳テキストの反映', titleEn: '', descriptionJa: 'ビルドへの組み込み完了後、翻訳済みテキストを反映する。', descriptionEn: '', assigneeId: 'st07', startDate: '2026-09-21', dueDate: '2026-09-24', status: 'todo', dependsOn: 'tk11', createdAt: '2026-07-01T00:00:00.000Z' },
+  { id: 'tk12', projectId: 'pj02', titleJa: 'QAテスト(ローカライズ版ビルド確認)', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st10', startDate: '2026-09-25', dueDate: '2026-10-05', status: 'todo', dependsOn: 'tk15', createdAt: '2026-07-01T00:00:00.000Z' },
   { id: 'tk13', projectId: 'pj03', titleJa: '起承転結プロット第1稿', titleEn: '', descriptionJa: '', descriptionEn: '', assigneeId: 'st01', startDate: '2026-08-01', dueDate: '2026-08-20', status: 'in-progress', dependsOn: null, createdAt: '2026-08-01T00:00:00.000Z' },
 ];
 
