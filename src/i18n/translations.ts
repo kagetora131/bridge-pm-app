@@ -78,7 +78,7 @@ export const dictionaries = {
     jumpToMonth: '月を選択',
     allProjects: '全プロジェクト',
     allMembers: '全メンバー',
-    progressDisclaimer: '※ %は経過日数から算出した目安の進捗ペースです(実績の入力はありません)。ブロック中のタスクは%の代わりに状態を表示します。',
+    progressDisclaimer: '※ 左端の色枠はプロジェクトを表します(凡例参照)。%は経過日数から算出した目安の進捗ペースです(実績の入力はありません)。ブロック中のタスクは%の代わりに状態を表示します。',
     thisWeek: '今週',
     durationMinutes: '所要時間(分)',
 
@@ -219,7 +219,7 @@ export const dictionaries = {
     jumpToMonth: 'Jump to month',
     allProjects: 'All Projects',
     allMembers: 'All Members',
-    progressDisclaimer: '※ The % is a rough pace estimate based on elapsed days (no actual progress is recorded). Blocked tasks show their status instead of a percentage.',
+    progressDisclaimer: '※ The colored left edge identifies the project (see legend above). The % is a rough pace estimate based on elapsed days (no actual progress is recorded). Blocked tasks show their status instead of a percentage.',
     thisWeek: 'This Week',
     durationMinutes: 'Duration (min)',
 

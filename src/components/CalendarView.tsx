@@ -3,14 +3,8 @@ import { useI18n } from '../i18n/I18nContext';
 import { buildMonthGrid, chunk } from '../lib/calendar';
 import { WEEKDAY_LABELS } from '../lib/weekdays';
 import { isTaskActiveOnDay, taskProgressOnDay } from '../lib/taskProgress';
-import type { Member, Project, Task, TaskStatus } from '../types';
-
-const STATUS_FILL: Record<TaskStatus, string> = {
-  todo: 'bg-slate-300',
-  'in-progress': 'bg-amber-400',
-  blocked: 'bg-rose-400',
-  done: 'bg-emerald-400',
-};
+import { colorForProject } from '../lib/projectColors';
+import type { Member, Project, Task } from '../types';
 
 const MAX_VISIBLE_PER_DAY = 4;
 
@@ -139,7 +133,17 @@ export function CalendarView({
         </div>
       </div>
 
-      <p className="mb-3 text-sm font-medium text-slate-700">{monthLabel}</p>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <p className="text-sm font-medium text-slate-700">{monthLabel}</p>
+        <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
+          {projects.map((p) => (
+            <span key={p.id} className="flex items-center gap-1">
+              <span className={`h-2 w-2 rounded-full ${colorForProject(p.id).swatch}`} />
+              {p.name}
+            </span>
+          ))}
+        </div>
+      </div>
 
       <div className="grid grid-cols-7 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200 text-xs">
         {weekdayLabels.map((w) => (
@@ -171,25 +175,28 @@ export function CalendarView({
                 </span>
               </p>
               <div className="space-y-0.5">
-                {dayTasks.slice(0, MAX_VISIBLE_PER_DAY).map(({ task, pct }) => (
-                  <button
-                    key={task.id}
-                    type="button"
-                    onClick={onOpenTask}
-                    title={`${memberName(task.assigneeId) ?? t('unassigned')}${task.status === 'blocked' ? ` · ${t('statusBlocked')}` : ''}`}
-                    className="relative block w-full overflow-hidden truncate rounded bg-slate-100 px-1 py-0.5 text-left text-slate-700 hover:bg-slate-200"
-                  >
-                    {pct !== null && (
-                      <span className={`absolute inset-y-0 left-0 ${STATUS_FILL[task.status]}`} style={{ width: `${pct}%` }} />
-                    )}
-                    <span className="relative flex items-center gap-1">
-                      <span className="truncate">{task.titleJa || task.titleEn}</span>
-                      <span className="ml-auto shrink-0 font-medium">
-                        {task.status === 'blocked' ? t('statusBlocked') : pct !== null ? `${pct}%` : ''}
+                {dayTasks.slice(0, MAX_VISIBLE_PER_DAY).map(({ task, pct }) => {
+                  const color = colorForProject(task.projectId);
+                  return (
+                    <button
+                      key={task.id}
+                      type="button"
+                      onClick={onOpenTask}
+                      title={`${memberName(task.assigneeId) ?? t('unassigned')}${task.status === 'blocked' ? ` · ${t('statusBlocked')}` : ''}`}
+                      className={`relative block w-full overflow-hidden truncate rounded border-l-4 bg-slate-50 px-1 py-0.5 text-left text-slate-700 hover:bg-slate-100 ${color.border}`}
+                    >
+                      {pct !== null && (
+                        <span className={`absolute inset-y-0 left-0 ${color.fill}`} style={{ width: `${pct}%` }} />
+                      )}
+                      <span className="relative flex items-center gap-1">
+                        <span className="truncate">{task.titleJa || task.titleEn}</span>
+                        <span className="ml-auto shrink-0 font-medium">
+                          {task.status === 'blocked' ? t('statusBlocked') : pct !== null ? `${pct}%` : ''}
+                        </span>
                       </span>
-                    </span>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
                 {dayTasks.length > MAX_VISIBLE_PER_DAY && (
                   <p className="px-1 text-slate-400">+{dayTasks.length - MAX_VISIBLE_PER_DAY}</p>
                 )}
