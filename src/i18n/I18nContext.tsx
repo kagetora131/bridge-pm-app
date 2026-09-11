@@ -11,9 +11,17 @@ interface I18nValue {
 
 const I18nContext = createContext<I18nValue | null>(null);
 
-// 保存済みの選択が無い初回訪問時に使うデフォルト言語。端末の言語設定が日本語以外なら
-// 英語をデフォルトにする(フランス語・スペイン語など未対応言語の訪問者にも英語を表示するため)。
+// 保存済みの選択が無い初回訪問時に使うデフォルト言語。
+// ホームページの表示言語(同一オリジンのlocalStorageを共有)を端末の言語設定より
+// 優先し、それも無ければ端末の言語設定から判定する(日本語以外は英語をデフォルトに
+// して、フランス語・スペイン語など未対応言語の訪問者にも英語を表示する)。
 function detectDefaultLang(): UILang {
+  try {
+    const hpLang = window.localStorage.getItem('kagetora-lang');
+    if (hpLang === 'ja' || hpLang === 'en') return hpLang;
+  } catch {
+    // ignore
+  }
   try {
     return navigator.language.toLowerCase().startsWith('ja') ? 'ja' : 'en';
   } catch {
