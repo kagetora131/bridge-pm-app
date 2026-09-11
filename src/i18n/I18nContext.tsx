@@ -11,8 +11,18 @@ interface I18nValue {
 
 const I18nContext = createContext<I18nValue | null>(null);
 
+// 保存済みの選択が無い初回訪問時に使うデフォルト言語。端末の言語設定が日本語以外なら
+// 英語をデフォルトにする(フランス語・スペイン語など未対応言語の訪問者にも英語を表示するため)。
+function detectDefaultLang(): UILang {
+  try {
+    return navigator.language.toLowerCase().startsWith('ja') ? 'ja' : 'en';
+  } catch {
+    return 'ja';
+  }
+}
+
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<UILang>(() => loadJSON<UILang>('uiLang', 'ja'));
+  const [lang, setLangState] = useState<UILang>(() => loadJSON<UILang>('uiLang', detectDefaultLang()));
 
   // Keep <html lang> in sync with the displayed language (accessibility/SEO —
   // it's static "en" in index.html, which is wrong whenever the UI is Japanese).
