@@ -21,14 +21,41 @@ function detectDefaultLang(): UILang {
   }
 }
 
+// URLに ?lang=ja / ?lang=en があれば、保存済み設定より優先する
+// (ホームページの表示言語のままアプリを開けるようにするため)。
+function resolveInitialLang(): UILang {
+  try {
+    const urlLang = new URLSearchParams(window.location.search).get('lang');
+    if (urlLang === 'ja' || urlLang === 'en') return urlLang;
+  } catch {
+    // ignore
+  }
+  return loadJSON<UILang>('uiLang', detectDefaultLang());
+}
+
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<UILang>(() => loadJSON<UILang>('uiLang', detectDefaultLang()));
+  const [lang, setLangState] = useState<UILang>(resolveInitialLang);
 
   // Keep <html lang> in sync with the displayed language (accessibility/SEO —
   // it's static "en" in index.html, which is wrong whenever the UI is Japanese).
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);
+
+  // ?lang= で開かれた場合、初期表示には反映済みなので選択を保存しURLからは消しておく。
+  useEffect(() => {
+    try {
+      const url = new URL(window.location.href);
+      const urlLang = url.searchParams.get('lang');
+      if (urlLang === 'ja' || urlLang === 'en') {
+        saveJSON('uiLang', urlLang);
+        url.searchParams.delete('lang');
+        window.history.replaceState(null, '', url.pathname + url.search + url.hash);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const setLang = (next: UILang) => {
     setLangState(next);
