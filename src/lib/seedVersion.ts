@@ -12,7 +12,7 @@
 export const CURRENT_SEED_VERSION = '2026-08-30-member-centric';
 
 const VERSION_KEY = 'bridge-pm:seedVersion';
-export const DATA_KEYS = ['projects', 'assignments', 'tasks', 'members', 'glossary', 'recurringMeetings'];
+export const DATA_KEYS = ['projects', 'assignments', 'tasks', 'members', 'glossary', 'recurringMeetings', 'meetingBurdenLog'];
 
 export function ensureLatestSeed(): void {
   try {

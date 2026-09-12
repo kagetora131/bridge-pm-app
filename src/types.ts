@@ -94,3 +94,14 @@ export interface CompromiseResult {
     minutesOutside: number;
   }>;
 }
+
+/** A record of an ad-hoc meeting slot the bridge PM actually decided on, kept
+ * so the burden of past off-hours meetings can be tallied per member over time. */
+export interface MeetingDecisionLogEntry {
+  id: string;
+  decidedAt: string; // ISO datetime
+  title: string;
+  slotStartMs: number;
+  slotEndMs: number;
+  burdenMemberIds: string[]; // participants whose local time fell outside their working hours
+}

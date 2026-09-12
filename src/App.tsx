@@ -17,7 +17,7 @@ import {
   seedRecurringMeetings,
   seedTasks,
 } from './data/seed';
-import type { Assignment, GlossaryTerm, Member, Project, RecurringMeeting, Task } from './types';
+import type { Assignment, GlossaryTerm, Member, MeetingDecisionLogEntry, Project, RecurringMeeting, Task } from './types';
 
 // Runs before the usePersistentState hooks below read localStorage, so a
 // sample-data version bump takes effect on this very render rather than
@@ -35,6 +35,10 @@ export default function App() {
   const [recurringMeetings, setRecurringMeetings] = usePersistentState<RecurringMeeting[]>(
     'recurringMeetings',
     seedRecurringMeetings,
+  );
+  const [meetingBurdenLog, setMeetingBurdenLog] = usePersistentState<MeetingDecisionLogEntry[]>(
+    'meetingBurdenLog',
+    [],
   );
 
   return (
@@ -84,6 +88,8 @@ export default function App() {
             members={members}
             recurringMeetings={recurringMeetings}
             setRecurringMeetings={setRecurringMeetings}
+            meetingBurdenLog={meetingBurdenLog}
+            setMeetingBurdenLog={setMeetingBurdenLog}
           />
         )}
         {section === 'glossary' && <Glossary terms={glossary} setTerms={setGlossary} />}
