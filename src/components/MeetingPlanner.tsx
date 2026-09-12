@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
-import { computeMeetingWindow, findBestCompromise } from '../lib/meetingSuggest';
+import { computeMeetingWindow, findBestCompromise, nearestAllWorkingDayISO } from '../lib/meetingSuggest';
 import { browserTimezone, formatHourLabel, todayISO } from '../lib/timezone';
 import { timezonesInUse } from '../lib/timezoneList';
 import { RecurringMeetings } from './RecurringMeetings';
@@ -56,7 +56,9 @@ export function MeetingPlanner({
 }) {
   const { t } = useI18n();
   const [selectedIds, setSelectedIds] = useState<string[]>(() => members.slice(0, 3).map((m) => m.id));
-  const [referenceDate, setReferenceDate] = useState(todayISO());
+  const [referenceDate, setReferenceDate] = useState(() =>
+    nearestAllWorkingDayISO(members.slice(0, 3), todayISO()),
+  );
   const [displayTz, setDisplayTz] = useState(browserTimezone());
   const timezones = timezonesInUse(members);
 

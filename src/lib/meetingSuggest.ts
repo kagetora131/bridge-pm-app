@@ -7,6 +7,26 @@ const SLOT_MINUTES = 30;
 const SLOT_MS = SLOT_MINUTES * 60 * 1000;
 
 /**
+ * Finds the nearest date (starting from `fromISO`, inclusive) that is a
+ * working day for every given member. Prevents the meeting planner from
+ * defaulting to a date where nobody is available (e.g. today is a weekend),
+ * which would otherwise present a nonsensical "everyone works overtime"
+ * compromise. Falls back to `fromISO` if no such date exists within range
+ * (e.g. members have no overlapping working days at all).
+ */
+export function nearestAllWorkingDayISO(members: Member[], fromISO: string, maxLookaheadDays = 14): string {
+  if (members.length === 0) return fromISO;
+  for (let offset = 0; offset <= maxLookaheadDays; offset += 1) {
+    const candidate = addDaysISO(fromISO, offset);
+    const weekday = weekdayOfISO(candidate);
+    if (members.every((m) => (m.workingDays ?? DEFAULT_WORKING_DAYS).includes(weekday))) {
+      return candidate;
+    }
+  }
+  return fromISO;
+}
+
+/**
  * Returns the member's working-hours intervals (UTC ms), clipped to the
  * [windowStart, windowEnd) window. Scans a few neighbouring local calendar
  * dates so that a member whose local "today" differs from the reference
