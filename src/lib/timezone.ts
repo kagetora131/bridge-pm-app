@@ -60,6 +60,11 @@ export function currentWeekdayInZone(timeZone: string): number {
   return toZonedTime(new Date(), timeZone).getDay();
 }
 
+/** Current local calendar date "yyyy-MM-dd" for a timezone. */
+export function currentDateISOInZone(timeZone: string): string {
+  return formatInTimeZone(new Date(), timeZone, 'yyyy-MM-dd');
+}
+
 /** Local weekday (0=Sun...6=Sat) a given UTC instant falls on, in a timezone. */
 export function weekdayInZoneAt(ms: number, timeZone: string): number {
   return toZonedTime(new Date(ms), timeZone).getDay();

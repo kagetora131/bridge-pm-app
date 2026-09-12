@@ -7,6 +7,7 @@ import { isRiskTask, unresolvedDependency } from '../lib/calendarRisk';
 import { computeScheduleConflictRanges } from '../lib/scheduleConflicts';
 import { colorForProject } from '../lib/projectColors';
 import { todayISO } from '../lib/timezone';
+import { holidayOn } from '../lib/holidays';
 import type { Member, Project, Task } from '../types';
 
 const MAX_VISIBLE_PER_DAY = 4;
@@ -171,12 +172,14 @@ export function CalendarView({
             .map((task) => {
               const assignee = members.find((m) => m.id === task.assigneeId);
               const workingDays = assignee?.workingDays ?? DEFAULT_WORKING_DAYS;
+              const holiday = assignee ? holidayOn(assignee.timezone, cell.iso) : null;
               return {
                 task,
                 pct: taskProgressOnDay(task, cell.iso),
                 risk: isRiskTask(task, tasks, todayIso),
                 dependency: unresolvedDependency(task, tasks),
-                isRestDay: !workingDays.includes(weekdayOfISO(cell.iso)),
+                isRestDay: !workingDays.includes(weekdayOfISO(cell.iso)) || holiday !== null,
+                holidayName: holiday?.name ?? null,
               };
             });
 
@@ -199,11 +202,11 @@ export function CalendarView({
                 </span>
               </p>
               <div className="space-y-0.5">
-                {dayTasks.slice(0, MAX_VISIBLE_PER_DAY).map(({ task, pct, risk, dependency, isRestDay }) => {
+                {dayTasks.slice(0, MAX_VISIBLE_PER_DAY).map(({ task, pct, risk, dependency, isRestDay, holidayName }) => {
                   const color = colorForProject(task.projectId);
                   const titleParts = [memberName(task.assigneeId) ?? t('unassigned'), t(STATUS_KEY[task.status])];
                   if (dependency) titleParts.push(`${t('dependsOn')}: ${dependency.titleJa || dependency.titleEn}`);
-                  if (isRestDay) titleParts.push(t('restDay'));
+                  if (isRestDay) titleParts.push(holidayName ?? t('restDay'));
                   const showAsRest = isRestDay && !risk;
                   return (
                     <button

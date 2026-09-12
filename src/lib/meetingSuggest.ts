@@ -2,6 +2,7 @@ import type { CompromiseResult, Member, MeetingSlot } from '../types';
 import { DAY_MS, addDaysISO, localTimeToUtcMs, utcMidnight } from './timezone';
 import { weekdayOfISO } from './calendar';
 import { DEFAULT_WORKING_DAYS } from './weekdays';
+import { isHoliday } from './holidays';
 
 const SLOT_MINUTES = 30;
 const SLOT_MS = SLOT_MINUTES * 60 * 1000;
@@ -19,7 +20,11 @@ export function nearestAllWorkingDayISO(members: Member[], fromISO: string, maxL
   for (let offset = 0; offset <= maxLookaheadDays; offset += 1) {
     const candidate = addDaysISO(fromISO, offset);
     const weekday = weekdayOfISO(candidate);
-    if (members.every((m) => (m.workingDays ?? DEFAULT_WORKING_DAYS).includes(weekday))) {
+    if (
+      members.every(
+        (m) => (m.workingDays ?? DEFAULT_WORKING_DAYS).includes(weekday) && !isHoliday(m.timezone, candidate),
+      )
+    ) {
       return candidate;
     }
   }
@@ -43,6 +48,7 @@ export function memberIntervalsInWindow(
   for (let offset = -1; offset <= 2; offset += 1) {
     const dateISO = addDaysISO(referenceDateISO, offset);
     if (!workingDays.includes(weekdayOfISO(dateISO))) continue; // not a working day for this member
+    if (isHoliday(member.timezone, dateISO)) continue; // public holiday for this member's location
     const start = localTimeToUtcMs(dateISO, member.workStart, member.timezone);
     const end = localTimeToUtcMs(dateISO, member.workEnd, member.timezone);
     if (end <= start) continue; // overnight shifts not supported in MVP

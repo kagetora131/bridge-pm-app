@@ -1,6 +1,7 @@
 import type { Member } from '../types';
-import { currentTimeInZone, currentWeekdayInZone } from './timezone';
+import { currentDateISOInZone, currentTimeInZone, currentWeekdayInZone } from './timezone';
 import { DEFAULT_WORKING_DAYS } from './weekdays';
+import { isHoliday } from './holidays';
 
 function hhmmToMinutes(hhmm: string): number {
   const [h, m] = hhmm.split(':').map(Number);
@@ -11,6 +12,7 @@ function hhmmToMinutes(hhmm: string): number {
 export function isWorkingNow(member: Member): boolean {
   const workingDays = member.workingDays ?? DEFAULT_WORKING_DAYS;
   if (!workingDays.includes(currentWeekdayInZone(member.timezone))) return false;
+  if (isHoliday(member.timezone, currentDateISOInZone(member.timezone))) return false;
   const nowHHmm = currentTimeInZone(member.timezone);
   return nowHHmm >= member.workStart && nowHHmm < member.workEnd;
 }
