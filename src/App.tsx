@@ -81,6 +81,7 @@ export default function App() {
             tasks={tasks}
             setTasks={setTasks}
             projects={projects}
+            glossary={glossary}
           />
         )}
         {section === 'meeting' && (

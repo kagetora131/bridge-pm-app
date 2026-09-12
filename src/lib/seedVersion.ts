@@ -9,7 +9,7 @@
  * discarding anything the user had edited in — acceptable for sample data,
  * not something to do once this holds real user data.
  */
-export const CURRENT_SEED_VERSION = '2026-08-30-member-centric';
+export const CURRENT_SEED_VERSION = '2026-09-12-translation-workflow';
 
 const VERSION_KEY = 'bridge-pm:seedVersion';
 export const DATA_KEYS = ['projects', 'assignments', 'tasks', 'members', 'glossary', 'recurringMeetings', 'meetingBurdenLog'];

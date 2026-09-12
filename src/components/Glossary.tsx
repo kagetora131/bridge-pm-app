@@ -41,7 +41,10 @@ export function Glossary({
   return (
     <section>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-slate-900">{t('glossaryHeading')}</h2>
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">{t('glossaryHeading')}</h2>
+          <p className="mt-1 text-xs text-slate-400">{t('translationLanguageNote')}</p>
+        </div>
         <div className="flex items-center gap-2">
           <input
             className="input"

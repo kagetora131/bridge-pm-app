@@ -7,7 +7,7 @@ import { DEFAULT_WORKING_DAYS, WEEKDAY_LABELS } from '../lib/weekdays';
 import { computeWorkloads } from '../lib/workload';
 import { isWorkingNow } from '../lib/memberStatus';
 import { MemberTaskList } from './MemberTaskList';
-import type { Assignment, Member, Project, Task } from '../types';
+import type { Assignment, GlossaryTerm, Member, Project, Task } from '../types';
 
 const emptyDraft = {
   name: '',
@@ -39,6 +39,7 @@ export function MemberManager({
   tasks,
   setTasks,
   projects,
+  glossary,
 }: {
   members: Member[];
   setMembers: (updater: (prev: Member[]) => Member[]) => void;
@@ -46,6 +47,7 @@ export function MemberManager({
   tasks: Task[];
   setTasks: (updater: (prev: Task[]) => Task[]) => void;
   projects: Project[];
+  glossary: GlossaryTerm[];
 }) {
   const { t, lang } = useI18n();
   const [showForm, setShowForm] = useState(false);
@@ -318,7 +320,7 @@ export function MemberManager({
                     {t('delete')}
                   </button>
                 </div>
-                <MemberTaskList memberId={member.id} allTasks={tasks} setTasks={setTasks} projects={projects} />
+                <MemberTaskList memberId={member.id} allTasks={tasks} setTasks={setTasks} projects={projects} glossary={glossary} />
               </li>
             );
           })}

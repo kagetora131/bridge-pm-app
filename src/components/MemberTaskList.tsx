@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
 import { newId } from '../lib/storage';
-import type { Project, Task, TaskStatus } from '../types';
+import { taskAmbiguousPhrases, taskGlossaryMismatches } from '../lib/translationWorkflow';
+import type { GlossaryTerm, Project, Task, TaskStatus, TranslationStatus } from '../types';
 
 const STATUS_ORDER: TaskStatus[] = ['todo', 'in-progress', 'blocked', 'done'];
 const STATUS_KEY: Record<TaskStatus, 'statusTodo' | 'statusInProgress' | 'statusBlocked' | 'statusDone'> = {
@@ -17,10 +18,25 @@ const STATUS_COLOR: Record<TaskStatus, string> = {
   done: 'bg-emerald-100 text-emerald-800',
 };
 
+const TRANSLATION_STATUS_ORDER: TranslationStatus[] = ['untranslated', 'draft', 'reviewed'];
+const TRANSLATION_STATUS_KEY: Record<TranslationStatus, 'translationStatusUntranslated' | 'translationStatusDraft' | 'translationStatusReviewed'> = {
+  untranslated: 'translationStatusUntranslated',
+  draft: 'translationStatusDraft',
+  reviewed: 'translationStatusReviewed',
+};
+const TRANSLATION_STATUS_COLOR: Record<TranslationStatus, string> = {
+  untranslated: 'bg-slate-100 text-slate-500',
+  draft: 'bg-sky-100 text-sky-800',
+  reviewed: 'bg-emerald-100 text-emerald-800',
+};
+
 const emptyDraft = {
   projectId: '',
   titleJa: '',
   titleEn: '',
+  descriptionJa: '',
+  descriptionEn: '',
+  translationStatus: 'untranslated' as TranslationStatus,
   startDate: '',
   dueDate: '',
   status: 'todo' as TaskStatus,
@@ -32,11 +48,13 @@ export function MemberTaskList({
   allTasks,
   setTasks,
   projects,
+  glossary,
 }: {
   memberId: string;
   allTasks: Task[];
   setTasks: (updater: (prev: Task[]) => Task[]) => void;
   projects: Project[];
+  glossary: GlossaryTerm[];
 }) {
   const { t } = useI18n();
   const [showForm, setShowForm] = useState(false);
@@ -61,6 +79,9 @@ export function MemberTaskList({
       projectId: task.projectId ?? '',
       titleJa: task.titleJa,
       titleEn: task.titleEn,
+      descriptionJa: task.descriptionJa,
+      descriptionEn: task.descriptionEn,
+      translationStatus: task.translationStatus,
       startDate: task.startDate ?? '',
       dueDate: task.dueDate ?? '',
       status: task.status,
@@ -81,6 +102,9 @@ export function MemberTaskList({
                 projectId: draft.projectId || null,
                 titleJa: draft.titleJa,
                 titleEn: draft.titleEn,
+                descriptionJa: draft.descriptionJa,
+                descriptionEn: draft.descriptionEn,
+                translationStatus: draft.translationStatus,
                 startDate: draft.startDate || null,
                 dueDate: draft.dueDate || null,
                 status: draft.status,
@@ -95,8 +119,9 @@ export function MemberTaskList({
         projectId: draft.projectId || null,
         titleJa: draft.titleJa,
         titleEn: draft.titleEn,
-        descriptionJa: '',
-        descriptionEn: '',
+        descriptionJa: draft.descriptionJa,
+        descriptionEn: draft.descriptionEn,
+        translationStatus: draft.translationStatus,
         assigneeId: memberId,
         startDate: draft.startDate || null,
         dueDate: draft.dueDate || null,
@@ -153,6 +178,34 @@ export function MemberTaskList({
             value={draft.titleEn}
             onChange={(e) => setDraft({ ...draft, titleEn: e.target.value })}
           />
+          <textarea
+            className="input"
+            rows={2}
+            placeholder={t('descriptionJa')}
+            value={draft.descriptionJa}
+            onChange={(e) => setDraft({ ...draft, descriptionJa: e.target.value })}
+          />
+          <textarea
+            className="input"
+            rows={2}
+            placeholder={t('descriptionEn')}
+            value={draft.descriptionEn}
+            onChange={(e) => setDraft({ ...draft, descriptionEn: e.target.value })}
+          />
+          <label className="text-xs text-slate-500">
+            {t('translationStatus')}
+            <select
+              className="input"
+              value={draft.translationStatus}
+              onChange={(e) => setDraft({ ...draft, translationStatus: e.target.value as TranslationStatus })}
+            >
+              {TRANSLATION_STATUS_ORDER.map((s) => (
+                <option key={s} value={s}>
+                  {t(TRANSLATION_STATUS_KEY[s])}
+                </option>
+              ))}
+            </select>
+          </label>
           <label className="text-xs text-slate-500">
             {t('startDate')}
             <input type="date" className="input" value={draft.startDate} onChange={(e) => setDraft({ ...draft, startDate: e.target.value })} />
@@ -190,18 +243,36 @@ export function MemberTaskList({
           {myTasks.map((task) => {
             const dependency = task.dependsOn ? allTasks.find((other) => other.id === task.dependsOn) : undefined;
             const dependencyUnresolved = Boolean(dependency && dependency.status !== 'done');
+            const glossaryMismatches = taskGlossaryMismatches(task, glossary);
+            const ambiguousPhrases = taskAmbiguousPhrases(task);
             return (
               <li key={task.id} className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
                 <span className="min-w-0 truncate">
                   {projectName(task.projectId) && <span className="text-slate-400">{projectName(task.projectId)} · </span>}
-                  {task.titleJa || task.titleEn}
+                  {task.titleJa}
+                  {task.titleEn && <span className="text-slate-400"> / {task.titleEn}</span>}
                   {task.startDate && task.dueDate && (
                     <span className="text-slate-400"> ({task.startDate} 〜 {task.dueDate})</span>
                   )}
                   {!task.startDate && task.dueDate && <span className="text-slate-400"> ({t('dueDate')}: {task.dueDate})</span>}
                   {dependencyUnresolved && <span className="text-rose-600"> ⚠ {t('dependsOn')}: {taskTitle(dependency)}</span>}
+                  {glossaryMismatches.length > 0 && (
+                    <span className="text-amber-600" title={glossaryMismatches.map((m) => `${m.termJa} → ${m.termEn}`).join(', ')}>
+                      {' '}
+                      ⚠ {t('glossaryMismatchWarning')}
+                    </span>
+                  )}
+                  {ambiguousPhrases.length > 0 && (
+                    <span className="text-amber-600" title={ambiguousPhrases.join(', ')}>
+                      {' '}
+                      ⚠ {t('ambiguousPhraseWarning')}
+                    </span>
+                  )}
                 </span>
                 <span className="flex shrink-0 items-center gap-2">
+                  <span className={`rounded-full px-2 py-0.5 font-medium ${TRANSLATION_STATUS_COLOR[task.translationStatus]}`}>
+                    {t(TRANSLATION_STATUS_KEY[task.translationStatus])}
+                  </span>
                   <span className={`rounded-full px-2 py-0.5 font-medium ${STATUS_COLOR[task.status]}`}>{t(STATUS_KEY[task.status])}</span>
                   <button type="button" onClick={() => startEdit(task)} className="text-slate-500 hover:text-slate-900">
                     {t('edit')}

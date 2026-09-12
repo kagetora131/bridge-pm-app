@@ -43,6 +43,10 @@ export interface Assignment {
   allocatedHoursPerWeek: number;
 }
 
+/** Where a task's English translation stands — the point isn't "AI translated
+ * it", it's "a human can tell whether it's safe to act on yet". */
+export type TranslationStatus = 'untranslated' | 'draft' | 'reviewed';
+
 export interface Task {
   id: string;
   projectId: string | null;
@@ -50,6 +54,9 @@ export interface Task {
   titleEn: string;
   descriptionJa: string;
   descriptionEn: string;
+  /** Always kept alongside the translation (titleEn/descriptionEn) — the
+   * source text is never discarded, so a human can always check it. */
+  translationStatus: TranslationStatus;
   assigneeId: string | null;
   startDate: string | null; // ISO date "yyyy-MM-dd" — when work on this task begins
   dueDate: string | null; // ISO date "yyyy-MM-dd"
