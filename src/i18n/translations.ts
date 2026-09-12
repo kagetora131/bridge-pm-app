@@ -135,6 +135,7 @@ export const dictionaries = {
     allMembers: '全メンバー',
     progressDisclaimer: '※ バーの色はプロジェクトを表します(凡例参照)。バーの端の%は経過日数から算出した目安の「予定ペース」であり、実績の入力に基づくものではありません。⚠が付いたタスクはブロック中・期限超過・依存タスク未解決のいずれかです。',
     calendarRiskLegend: '⚠ = ブロック中・期限超過・依存タスク未解決のいずれか',
+    calendarRestDayLegend: '点線 = 担当者の休日(拠点ごとの稼働曜日に基づく。例: ドバイは金・土)',
     scheduleConflictHeading: 'メンバーの稼働衝突',
     scheduleConflictDesc: '同じ期間に複数プロジェクトの担当タスクが重なっているメンバーです。アサインの調整が必要か確認してください。',
     noScheduleConflicts: '稼働が重複しているメンバーはいません。',
@@ -171,6 +172,7 @@ export const dictionaries = {
     selectAtLeastOne: 'メンバーを1人以上選んでください。',
     timelineLegend: '塗りつぶし = 稼働時間 / 縦線 = 提案時間帯',
     restDay: '稼働日ではありません',
+    restDayShort: '休',
 
     meetingDurationLabel: '所要時間',
     meetingTitleOptional: '会議名(任意)',
@@ -350,6 +352,7 @@ export const dictionaries = {
     allMembers: 'All Members',
     progressDisclaimer: '※ Bar color identifies the project (see legend above). The % at the end of a bar is a rough "planned pace" estimate based on elapsed days — not actual recorded progress. A ⚠ marks a task that is blocked, overdue, or waiting on an unresolved dependency.',
     calendarRiskLegend: '⚠ = Blocked, overdue, or waiting on an unresolved dependency',
+    calendarRestDayLegend: "Dashed = the assignee's day off (based on their site's working days — e.g. Dubai is Fri/Sat)",
     scheduleConflictHeading: 'Member Schedule Conflicts',
     scheduleConflictDesc: 'Members whose assigned tasks from different projects overlap on the same days — check whether their allocation needs adjusting.',
     noScheduleConflicts: 'No overlapping schedules.',
@@ -386,6 +389,7 @@ export const dictionaries = {
     selectAtLeastOne: 'Please select at least one member.',
     timelineLegend: 'Filled bar = working hours / vertical line = suggested slot',
     restDay: 'Not a working day',
+    restDayShort: 'Off',
 
     meetingDurationLabel: 'Duration',
     meetingTitleOptional: 'Meeting title (optional)',

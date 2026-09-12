@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
-import { buildMonthGrid, chunk } from '../lib/calendar';
-import { WEEKDAY_LABELS } from '../lib/weekdays';
+import { buildMonthGrid, chunk, weekdayOfISO } from '../lib/calendar';
+import { DEFAULT_WORKING_DAYS, WEEKDAY_LABELS } from '../lib/weekdays';
 import { isTaskActiveOnDay, taskProgressOnDay } from '../lib/taskProgress';
 import { isRiskTask, unresolvedDependency } from '../lib/calendarRisk';
 import { computeScheduleConflictRanges } from '../lib/scheduleConflicts';
@@ -155,6 +155,7 @@ export function CalendarView({
             </span>
           ))}
           <span className="flex items-center gap-1 text-rose-600">{t('calendarRiskLegend')}</span>
+          <span className="flex items-center gap-1 text-slate-400">{t('calendarRestDayLegend')}</span>
         </div>
       </div>
 
@@ -167,12 +168,17 @@ export function CalendarView({
         {weeks.flat().map((cell) => {
           const dayTasks = visibleTasks
             .filter((task) => isTaskActiveOnDay(task, cell.iso))
-            .map((task) => ({
-              task,
-              pct: taskProgressOnDay(task, cell.iso),
-              risk: isRiskTask(task, tasks, todayIso),
-              dependency: unresolvedDependency(task, tasks),
-            }));
+            .map((task) => {
+              const assignee = members.find((m) => m.id === task.assigneeId);
+              const workingDays = assignee?.workingDays ?? DEFAULT_WORKING_DAYS;
+              return {
+                task,
+                pct: taskProgressOnDay(task, cell.iso),
+                risk: isRiskTask(task, tasks, todayIso),
+                dependency: unresolvedDependency(task, tasks),
+                isRestDay: !workingDays.includes(weekdayOfISO(cell.iso)),
+              };
+            });
 
           return (
             <div
@@ -193,10 +199,12 @@ export function CalendarView({
                 </span>
               </p>
               <div className="space-y-0.5">
-                {dayTasks.slice(0, MAX_VISIBLE_PER_DAY).map(({ task, pct, risk, dependency }) => {
+                {dayTasks.slice(0, MAX_VISIBLE_PER_DAY).map(({ task, pct, risk, dependency, isRestDay }) => {
                   const color = colorForProject(task.projectId);
                   const titleParts = [memberName(task.assigneeId) ?? t('unassigned'), t(STATUS_KEY[task.status])];
                   if (dependency) titleParts.push(`${t('dependsOn')}: ${dependency.titleJa || dependency.titleEn}`);
+                  if (isRestDay) titleParts.push(t('restDay'));
+                  const showAsRest = isRestDay && !risk;
                   return (
                     <button
                       key={task.id}
@@ -204,12 +212,20 @@ export function CalendarView({
                       onClick={onOpenTask}
                       title={titleParts.join(' · ')}
                       className={`block w-full truncate rounded px-1 py-0.5 text-left text-[11px] font-medium hover:opacity-80 ${
-                        risk ? 'border border-rose-500 bg-rose-50 text-rose-700' : `${color.fill} text-slate-800`
+                        risk
+                          ? 'border border-rose-500 bg-rose-50 text-rose-700'
+                          : showAsRest
+                            ? 'border border-dashed border-slate-200 bg-slate-50 text-slate-400'
+                            : `${color.fill} text-slate-800`
                       }`}
                     >
                       {risk && '⚠ '}
                       <span className="truncate">{task.titleJa || task.titleEn}</span>
-                      {pct !== null && <span className="ml-1 font-normal text-slate-500">({pct}%)</span>}
+                      {showAsRest ? (
+                        <span className="ml-1 font-normal">({t('restDayShort')})</span>
+                      ) : (
+                        pct !== null && <span className="ml-1 font-normal text-slate-500">({pct}%)</span>
+                      )}
                     </button>
                   );
                 })}
