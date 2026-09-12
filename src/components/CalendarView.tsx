@@ -3,7 +3,10 @@ import { useI18n } from '../i18n/I18nContext';
 import { buildMonthGrid, chunk } from '../lib/calendar';
 import { WEEKDAY_LABELS } from '../lib/weekdays';
 import { isTaskActiveOnDay, taskProgressOnDay } from '../lib/taskProgress';
+import { isRiskTask, unresolvedDependency } from '../lib/calendarRisk';
+import { computeScheduleConflictRanges } from '../lib/scheduleConflicts';
 import { colorForProject } from '../lib/projectColors';
+import { todayISO } from '../lib/timezone';
 import type { Member, Project, Task } from '../types';
 
 const MAX_VISIBLE_PER_DAY = 4;
@@ -21,6 +24,7 @@ export function CalendarView({
 }) {
   const { t, lang } = useI18n();
   const today = useMemo(() => new Date(), []);
+  const todayIso = useMemo(() => todayISO(), []);
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [projectFilter, setProjectFilter] = useState<string>('all');
@@ -34,6 +38,11 @@ export function CalendarView({
         .filter((task) => projectFilter === 'all' || task.projectId === projectFilter)
         .filter((task) => memberFilter === 'all' || task.assigneeId === memberFilter),
     [tasks, projectFilter, memberFilter],
+  );
+
+  const conflictRanges = useMemo(
+    () => computeScheduleConflictRanges(tasks, members, weeks.flat().map((cell) => cell.iso)),
+    [tasks, members, weeks],
   );
 
   const shiftMonth = (delta: number) => {
@@ -142,6 +151,7 @@ export function CalendarView({
               {p.name}
             </span>
           ))}
+          <span className="flex items-center gap-1 text-rose-600">{t('calendarRiskLegend')}</span>
         </div>
       </div>
 
@@ -154,7 +164,12 @@ export function CalendarView({
         {weeks.flat().map((cell) => {
           const dayTasks = visibleTasks
             .filter((task) => isTaskActiveOnDay(task, cell.iso))
-            .map((task) => ({ task, pct: taskProgressOnDay(task, cell.iso) }));
+            .map((task) => ({
+              task,
+              pct: taskProgressOnDay(task, cell.iso),
+              risk: isRiskTask(task, tasks, todayIso),
+              dependency: unresolvedDependency(task, tasks),
+            }));
 
           return (
             <div
@@ -175,25 +190,23 @@ export function CalendarView({
                 </span>
               </p>
               <div className="space-y-0.5">
-                {dayTasks.slice(0, MAX_VISIBLE_PER_DAY).map(({ task, pct }) => {
+                {dayTasks.slice(0, MAX_VISIBLE_PER_DAY).map(({ task, pct, risk, dependency }) => {
                   const color = colorForProject(task.projectId);
+                  const titleParts = [memberName(task.assigneeId) ?? t('unassigned'), t(STATUS_KEY[task.status])];
+                  if (dependency) titleParts.push(`${t('dependsOn')}: ${dependency.titleJa || dependency.titleEn}`);
                   return (
                     <button
                       key={task.id}
                       type="button"
                       onClick={onOpenTask}
-                      title={`${memberName(task.assigneeId) ?? t('unassigned')}${task.status === 'blocked' ? ` · ${t('statusBlocked')}` : ''}`}
-                      className={`relative block w-full overflow-hidden truncate rounded border-l-4 bg-slate-50 px-1 py-0.5 text-left text-slate-700 hover:bg-slate-100 ${color.border}`}
+                      title={titleParts.join(' · ')}
+                      className={`block w-full truncate rounded px-1 py-0.5 text-left text-[11px] font-medium hover:opacity-80 ${
+                        risk ? 'border border-rose-500 bg-rose-50 text-rose-700' : `${color.fill} text-slate-800`
+                      }`}
                     >
-                      {pct !== null && (
-                        <span className={`absolute inset-y-0 left-0 ${color.fill}`} style={{ width: `${pct}%` }} />
-                      )}
-                      <span className="relative flex items-center gap-1">
-                        <span className="truncate">{task.titleJa || task.titleEn}</span>
-                        <span className="ml-auto shrink-0 font-medium">
-                          {task.status === 'blocked' ? t('statusBlocked') : pct !== null ? `${pct}%` : ''}
-                        </span>
-                      </span>
+                      {risk && '⚠ '}
+                      <span className="truncate">{task.titleJa || task.titleEn}</span>
+                      {pct !== null && <span className="ml-1 font-normal text-slate-500">({pct}%)</span>}
                     </button>
                   );
                 })}
@@ -206,6 +219,40 @@ export function CalendarView({
         })}
       </div>
       <p className="mt-2 text-[11px] text-slate-400">{t('progressDisclaimer')}</p>
+
+      <div className="mt-6 rounded-lg border border-slate-200 bg-white p-4">
+        <h3 className="text-sm font-semibold text-slate-900">{t('scheduleConflictHeading')}</h3>
+        <p className="mt-1 text-xs text-slate-500">{t('scheduleConflictDesc')}</p>
+        {conflictRanges.length === 0 ? (
+          <p className="mt-2 text-xs text-slate-400">{t('noScheduleConflicts')}</p>
+        ) : (
+          <ul className="mt-3 space-y-1.5 text-xs text-slate-600">
+            {conflictRanges.map((range, idx) => (
+              <li key={idx} className="flex flex-wrap items-center gap-2">
+                <span className="font-medium text-slate-800">{memberName(range.memberId)}</span>
+                <span className="text-slate-400">
+                  {range.startISO === range.endISO ? range.startISO : `${range.startISO} 〜 ${range.endISO}`}
+                </span>
+                <span className="flex flex-wrap items-center gap-1">
+                  {range.projectIds.map((pid) => (
+                    <span key={pid ?? 'none'} className="flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5">
+                      <span className={`h-1.5 w-1.5 rounded-full ${colorForProject(pid).swatch}`} />
+                      {pid ? (projects.find((p) => p.id === pid)?.name ?? pid) : t('noProject')}
+                    </span>
+                  ))}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </section>
   );
 }
+
+const STATUS_KEY: Record<Task['status'], 'statusTodo' | 'statusInProgress' | 'statusBlocked' | 'statusDone'> = {
+  todo: 'statusTodo',
+  'in-progress': 'statusInProgress',
+  blocked: 'statusBlocked',
+  done: 'statusDone',
+};
