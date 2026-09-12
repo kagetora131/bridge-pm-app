@@ -125,7 +125,10 @@ export function ProjectsView({
   return (
     <section>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-900">{t('projectsHeading')}</h2>
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">{t('projectsHeading')}</h2>
+          <p className="mt-1 text-xs text-slate-400">{t('projectsIntro')}</p>
+        </div>
         <button
           type="button"
           onClick={startAdd}

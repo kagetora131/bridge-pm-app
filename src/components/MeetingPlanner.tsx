@@ -166,6 +166,7 @@ export function MeetingPlanner({
 
       <div className="mt-10 border-t border-slate-200 pt-6">
         <h2 className="text-lg font-semibold text-slate-900">{t('meetingHeading')}</h2>
+        <p className="mt-1 text-xs text-slate-400">{t('meetingIntroText')}</p>
         <p className="mt-1 text-sm text-slate-500">{t('meetingDesc')}</p>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

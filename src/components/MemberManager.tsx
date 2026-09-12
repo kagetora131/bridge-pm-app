@@ -132,7 +132,10 @@ export function MemberManager({
   return (
     <section>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-900">{t('membersHeading')}</h2>
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">{t('membersHeading')}</h2>
+          <p className="mt-1 text-xs text-slate-400">{t('membersIntroText')}</p>
+        </div>
         <button
           type="button"
           onClick={startAdd}

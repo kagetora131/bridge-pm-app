@@ -86,7 +86,10 @@ export function CalendarView({
   return (
     <section>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-slate-900">{t('calendarHeading')}</h2>
+        <div>
+          <h2 className="text-lg font-semibold text-slate-900">{t('calendarHeading')}</h2>
+          <p className="mt-1 text-xs text-slate-400">{t('calendarIntro')}</p>
+        </div>
         <div className="flex flex-wrap items-center gap-2">
           <select className="input w-auto" value={memberFilter} onChange={(e) => setMemberFilter(e.target.value)}>
             <option value="all">{t('allMembers')}</option>

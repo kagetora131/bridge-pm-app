@@ -1,5 +1,8 @@
+import { useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
 import { resetToSampleData } from '../lib/seedVersion';
+import { downloadDataExport, importDataFromJSON } from '../lib/dataPortability';
+import { GuidedTour } from './GuidedTour';
 
 export type Section = 'dashboard' | 'projects' | 'calendar' | 'members' | 'meeting' | 'glossary';
 
@@ -22,10 +25,36 @@ export function Header({
   onSectionChange: (s: Section) => void;
 }) {
   const { t, lang, setLang } = useI18n();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleReset = () => {
+    setMenuOpen(false);
     if (window.confirm(t('resetConfirm'))) {
       resetToSampleData();
+    }
+  };
+
+  const handleExport = () => {
+    setMenuOpen(false);
+    downloadDataExport();
+  };
+
+  const handleImportClick = () => {
+    setMenuOpen(false);
+    fileInputRef.current?.click();
+  };
+
+  const handleImportFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    try {
+      const text = await file.text();
+      importDataFromJSON(text);
+    } catch {
+      window.alert(t('importError'));
     }
   };
 
@@ -33,10 +62,18 @@ export function Header({
     <header className="border-b border-slate-200 bg-white">
       <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">{t('appTitle')}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-bold text-slate-900">{t('appTitle')}</h1>
+            <span
+              className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800"
+              title={t('demoModeNote')}
+            >
+              {t('demoModeBadge')}
+            </span>
+          </div>
           <p className="text-sm text-slate-500">{t('appSubtitle')}</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <nav className="flex flex-wrap gap-1 rounded-lg bg-slate-100 p-1">
             {SECTIONS.map((s) => (
               <button
@@ -55,21 +92,51 @@ export function Header({
           </nav>
           <button
             type="button"
-            onClick={handleReset}
-            title={t('resetSampleData')}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-500 hover:bg-slate-50"
-          >
-            {t('resetSampleData')}
-          </button>
-          <button
-            type="button"
             onClick={() => setLang(lang === 'ja' ? 'en' : 'ja')}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="shrink-0 whitespace-nowrap rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
           >
             {t('langToggle')}
           </button>
+          <div className="relative shrink-0">
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label="menu"
+              className="shrink-0 rounded-md border border-slate-300 px-2.5 py-1.5 text-sm font-medium text-slate-500 hover:bg-slate-50"
+            >
+              ⋯
+            </button>
+            {menuOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+                <div className="absolute right-0 z-20 mt-1 w-56 rounded-md border border-slate-200 bg-white py-1 text-sm shadow-lg">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setShowGuide(true);
+                    }}
+                    className="block w-full px-3 py-2 text-left text-slate-700 hover:bg-slate-50"
+                  >
+                    {t('guideTour')}
+                  </button>
+                  <button type="button" onClick={handleExport} className="block w-full px-3 py-2 text-left text-slate-700 hover:bg-slate-50">
+                    {t('exportData')}
+                  </button>
+                  <button type="button" onClick={handleImportClick} className="block w-full px-3 py-2 text-left text-slate-700 hover:bg-slate-50">
+                    {t('importData')}
+                  </button>
+                  <button type="button" onClick={handleReset} className="block w-full px-3 py-2 text-left text-slate-500 hover:bg-slate-50">
+                    {t('resetSampleData')}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+          <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleImportFile} />
         </div>
       </div>
+      {showGuide && <GuidedTour onClose={() => setShowGuide(false)} />}
     </header>
   );
 }
