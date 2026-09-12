@@ -1,15 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
-import {
-  currentDateLabelInZone,
-  currentTimeInZone,
-  currentWeekdayInZone,
-  utcOffsetMinutes,
-} from '../lib/timezone';
+import { currentDateLabelInZone, currentTimeInZone, utcOffsetMinutes } from '../lib/timezone';
 import { availableTimezones } from '../lib/timezoneList';
 import { newId } from '../lib/storage';
 import { DEFAULT_WORKING_DAYS, WEEKDAY_LABELS } from '../lib/weekdays';
 import { computeWorkloads } from '../lib/workload';
+import { isWorkingNow } from '../lib/memberStatus';
 import { MemberTaskList } from './MemberTaskList';
 import type { Assignment, Member, Project, Task } from '../types';
 
@@ -27,13 +23,6 @@ const emptyDraft = {
   localCurrencyCode: '',
   localHourlyRate: '',
 };
-
-function isWorkingNow(member: Member): boolean {
-  const workingDays = member.workingDays ?? DEFAULT_WORKING_DAYS;
-  if (!workingDays.includes(currentWeekdayInZone(member.timezone))) return false;
-  const nowHHmm = currentTimeInZone(member.timezone);
-  return nowHHmm >= member.workStart && nowHHmm < member.workEnd;
-}
 
 function formatOffset(minutes: number): string {
   const sign = minutes >= 0 ? '+' : '-';

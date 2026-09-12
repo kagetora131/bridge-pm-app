@@ -71,3 +71,7 @@ export function utcOffsetMinutes(timeZone: string): number {
 export function formatHourLabel(ms: number, timeZone: string): string {
   return formatInTimeZone(new Date(ms), timeZone, 'HH:mm');
 }
+
+export function formatDateTimeLabel(ms: number, timeZone: string): string {
+  return formatInTimeZone(new Date(ms), timeZone, 'yyyy-MM-dd HH:mm');
+}

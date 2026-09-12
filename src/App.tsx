@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Header, type Section } from './components/Header';
+import { Dashboard } from './components/Dashboard';
 import { ProjectsView } from './components/ProjectsView';
 import { CalendarView } from './components/CalendarView';
 import { MemberManager } from './components/MemberManager';
@@ -25,7 +26,7 @@ ensureLatestSeed();
 
 export default function App() {
   const { t } = useI18n();
-  const [section, setSection] = useState<Section>('projects');
+  const [section, setSection] = useState<Section>('dashboard');
   const [projects, setProjects] = usePersistentState<Project[]>('projects', seedProjects);
   const [assignments, setAssignments] = usePersistentState<Assignment[]>('assignments', seedAssignments);
   const [tasks, setTasks] = usePersistentState<Task[]>('tasks', seedTasks);
@@ -40,6 +41,16 @@ export default function App() {
     <div className="min-h-screen bg-slate-50">
       <Header section={section} onSectionChange={setSection} />
       <main className="mx-auto max-w-5xl px-4 py-8">
+        {section === 'dashboard' && (
+          <Dashboard
+            members={members}
+            assignments={assignments}
+            tasks={tasks}
+            projects={projects}
+            recurringMeetings={recurringMeetings}
+            onNavigate={setSection}
+          />
+        )}
         {section === 'projects' && (
           <ProjectsView
             projects={projects}

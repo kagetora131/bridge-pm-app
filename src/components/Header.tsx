@@ -1,11 +1,12 @@
 import { useI18n } from '../i18n/I18nContext';
 import { resetToSampleData } from '../lib/seedVersion';
 
-export type Section = 'projects' | 'calendar' | 'members' | 'meeting' | 'glossary';
+export type Section = 'dashboard' | 'projects' | 'calendar' | 'members' | 'meeting' | 'glossary';
 
-const SECTIONS: Section[] = ['projects', 'calendar', 'members', 'meeting', 'glossary'];
+const SECTIONS: Section[] = ['dashboard', 'projects', 'calendar', 'members', 'meeting', 'glossary'];
 
-const NAV_KEY: Record<Section, 'navProjects' | 'navCalendar' | 'navMembers' | 'navMeeting' | 'navGlossary'> = {
+const NAV_KEY: Record<Section, 'navDashboard' | 'navProjects' | 'navCalendar' | 'navMembers' | 'navMeeting' | 'navGlossary'> = {
+  dashboard: 'navDashboard',
   projects: 'navProjects',
   calendar: 'navCalendar',
   members: 'navMembers',
