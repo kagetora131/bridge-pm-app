@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
 import { resetToSampleData } from '../lib/seedVersion';
 import { downloadDataExport, importDataFromJSON } from '../lib/dataPortability';
+import { browserTimezone, currentDateLabelInZone } from '../lib/timezone';
 import { GuidedTour } from './GuidedTour';
 
 export type Section = 'dashboard' | 'projects' | 'calendar' | 'members' | 'meeting' | 'glossary';
@@ -28,6 +29,11 @@ export function Header({
   const [menuOpen, setMenuOpen] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // カレンダー機能を持つアプリなので、開くたびに「今の実際の日付」を
+  // 常に確認できるよう、ヘッダーに本日の日付を表示する(デモ用の固定日付では
+  // なく、閲覧者のブラウザから見た本日)。
+  const todayLabel = currentDateLabelInZone(browserTimezone(), lang === 'ja' ? 'ja-JP' : 'en-US');
 
   const handleReset = () => {
     setMenuOpen(false);
@@ -69,6 +75,9 @@ export function Header({
               title={t('demoModeNote')}
             >
               {t('demoModeBadge')}
+            </span>
+            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+              {t('today')}: {todayLabel}
             </span>
           </div>
           <p className="text-sm text-slate-500">{t('appSubtitle')}</p>
