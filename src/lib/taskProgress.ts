@@ -18,6 +18,17 @@ export function isTaskActiveOnDay(task: Task, dateISO: string): boolean {
   return span !== null && dateISO >= span.start && dateISO <= span.end;
 }
 
+/** Purely date-based planned completion (%) as of `dateISO` — independent of status,
+ * so it can be compared against the human-entered actual progress. */
+export function plannedPaceOnDay(task: Task, dateISO: string): number | null {
+  const span = taskSpan(task);
+  if (!span) return null;
+  if (dateISO < span.start) return 0;
+  if (dateISO > span.end) return 100;
+  const totalDays = daysBetweenInclusive(span.start, span.end);
+  return Math.min(100, Math.round((daysBetweenInclusive(span.start, dateISO) / totalDays) * 100));
+}
+
 /**
  * Estimated completion percentage for a task on a given calendar day.
  * Not a report of actual work done — there is no field for that — but a

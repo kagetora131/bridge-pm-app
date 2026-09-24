@@ -40,6 +40,9 @@ export function MemberManager({
   setTasks,
   projects,
   glossary,
+  onOpenTask,
+  onDeleteTask,
+  onDeleteMember,
 }: {
   members: Member[];
   setMembers: (updater: (prev: Member[]) => Member[]) => void;
@@ -48,6 +51,9 @@ export function MemberManager({
   setTasks: (updater: (prev: Task[]) => Task[]) => void;
   projects: Project[];
   glossary: GlossaryTerm[];
+  onOpenTask: (taskId: string) => void;
+  onDeleteTask: (taskId: string) => void;
+  onDeleteMember: (memberId: string) => void;
 }) {
   const { t, lang } = useI18n();
   const [showForm, setShowForm] = useState(false);
@@ -127,7 +133,7 @@ export function MemberManager({
     setEditingId(null);
   };
 
-  const remove = (id: string) => setMembers((prev) => prev.filter((m) => m.id !== id));
+  const hasUnassignedTasks = tasks.some((task) => task.assigneeId === null);
 
   return (
     <section>
@@ -319,15 +325,39 @@ export function MemberManager({
                   <button type="button" onClick={() => startEdit(member)} className="text-sm text-slate-500 hover:text-slate-900">
                     {t('edit')}
                   </button>
-                  <button type="button" onClick={() => remove(member.id)} className="text-sm text-rose-500 hover:text-rose-700">
+                  <button type="button" onClick={() => onDeleteMember(member.id)} className="text-sm text-rose-500 hover:text-rose-700">
                     {t('delete')}
                   </button>
                 </div>
-                <MemberTaskList memberId={member.id} allTasks={tasks} setTasks={setTasks} projects={projects} glossary={glossary} />
+                <MemberTaskList
+                  memberId={member.id}
+                  heading={t('assignedTasks')}
+                  allTasks={tasks}
+                  setTasks={setTasks}
+                  projects={projects}
+                  glossary={glossary}
+                  onOpenTask={onOpenTask}
+                  onDeleteTask={onDeleteTask}
+                />
               </li>
             );
           })}
         </ul>
+      )}
+
+      {hasUnassignedTasks && (
+        <div className="mt-3 rounded-lg border border-dashed border-slate-300 bg-white p-4">
+          <MemberTaskList
+            memberId={null}
+            heading={t('unassignedTasksHeading')}
+            allTasks={tasks}
+            setTasks={setTasks}
+            projects={projects}
+            glossary={glossary}
+            onOpenTask={onOpenTask}
+            onDeleteTask={onDeleteTask}
+          />
+        </div>
       )}
     </section>
   );

@@ -5,6 +5,7 @@ import { addDaysISO, localTimeToUtcMs } from './timezone';
 import { occursOn } from './recurringMeetings';
 import { computeMeetingWindow, findBestCompromise, nearestAllWorkingDayISO } from './meetingSuggest';
 import type { MeetingWindow } from './meetingSuggest';
+import { isBehindSchedule } from './calendarRisk';
 
 export interface BlockedTaskInfo {
   task: Task;
@@ -50,6 +51,11 @@ export function overBudgetProjects(
     if (budget?.isOverBudgetProjected) result.push({ project, budget });
   }
   return result;
+}
+
+/** In-progress tasks whose recorded actual progress lags the planned pace (and aren't already overdue). */
+export function behindScheduleTasks(tasks: Task[], todayISO: string): Task[] {
+  return tasks.filter((task) => isBehindSchedule(task, todayISO) && !(task.dueDate && task.dueDate < todayISO));
 }
 
 /** Not-done tasks whose due date has already passed. */
@@ -120,7 +126,7 @@ export function recommendedTeamSlot(members: Member[], todayISO: string): Recomm
   };
 }
 
-export type TodayFocusKind = 'overdueTask' | 'overBudgetProject' | 'blockedTask' | 'overloadedMember';
+export type TodayFocusKind = 'overdueTask' | 'overBudgetProject' | 'blockedTask' | 'behindScheduleTask' | 'overloadedMember';
 
 export interface TodayFocusItem {
   kind: TodayFocusKind;
@@ -132,12 +138,14 @@ export function computeTodayFocus(input: {
   overdue: Task[];
   overBudget: OverBudgetProjectInfo[];
   blocked: BlockedTaskInfo[];
+  behind: Task[];
   overloaded: OverloadedMemberInfo[];
 }, limit = 3): TodayFocusItem[] {
   const items: TodayFocusItem[] = [
     ...input.overdue.map((task): TodayFocusItem => ({ kind: 'overdueTask', refId: task.id })),
     ...input.overBudget.map((x): TodayFocusItem => ({ kind: 'overBudgetProject', refId: x.project.id })),
     ...input.blocked.map((x): TodayFocusItem => ({ kind: 'blockedTask', refId: x.task.id })),
+    ...input.behind.map((task): TodayFocusItem => ({ kind: 'behindScheduleTask', refId: task.id })),
     ...input.overloaded.map((x): TodayFocusItem => ({ kind: 'overloadedMember', refId: x.member.id })),
   ];
   return items.slice(0, limit);

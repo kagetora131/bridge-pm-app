@@ -39,6 +39,7 @@ export function ProjectsView({
   setAssignments,
   members,
   tasks,
+  onDeleteProject,
 }: {
   projects: Project[];
   setProjects: (updater: (prev: Project[]) => Project[]) => void;
@@ -46,6 +47,7 @@ export function ProjectsView({
   setAssignments: (updater: (prev: Assignment[]) => Assignment[]) => void;
   members: Member[];
   tasks: Task[];
+  onDeleteProject: (projectId: string) => void;
 }) {
   const { t } = useI18n();
   const [showForm, setShowForm] = useState(false);
@@ -95,11 +97,6 @@ export function ProjectsView({
     }
     setShowForm(false);
     setEditingId(null);
-  };
-
-  const removeProject = (id: string) => {
-    setProjects((prev) => prev.filter((p) => p.id !== id));
-    setAssignments((prev) => prev.filter((a) => a.projectId !== id));
   };
 
   const startAssignmentAdd = (projectId: string) => {
@@ -228,7 +225,7 @@ export function ProjectsView({
                     <button type="button" onClick={() => startEdit(project)} className="text-sm text-slate-500 hover:text-slate-900">
                       {t('edit')}
                     </button>
-                    <button type="button" onClick={() => removeProject(project.id)} className="text-sm text-rose-500 hover:text-rose-700">
+                    <button type="button" onClick={() => onDeleteProject(project.id)} className="text-sm text-rose-500 hover:text-rose-700">
                       {t('delete')}
                     </button>
                   </div>

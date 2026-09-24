@@ -3,7 +3,8 @@ import { useI18n } from '../i18n/I18nContext';
 import { buildMonthGrid, chunk, weekdayOfISO } from '../lib/calendar';
 import { DEFAULT_WORKING_DAYS, WEEKDAY_LABELS } from '../lib/weekdays';
 import { isTaskActiveOnDay, taskProgressOnDay } from '../lib/taskProgress';
-import { isRiskTask, unresolvedDependency } from '../lib/calendarRisk';
+import { riskReasons, unresolvedDependency } from '../lib/calendarRisk';
+import { RISK_REASON_KEY, STATUS_KEY } from '../lib/taskLabels';
 import { computeScheduleConflictRanges } from '../lib/scheduleConflicts';
 import { colorForProject } from '../lib/projectColors';
 import { todayISO } from '../lib/timezone';
@@ -22,7 +23,7 @@ export function CalendarView({
   tasks: Task[];
   members: Member[];
   projects: Project[];
-  onOpenTask: () => void;
+  onOpenTask: (taskId: string) => void;
 }) {
   const { t, lang } = useI18n();
   const today = useMemo(() => new Date(), []);
@@ -177,7 +178,7 @@ export function CalendarView({
               return {
                 task,
                 pct: taskProgressOnDay(task, cell.iso),
-                risk: isRiskTask(task, tasks, todayIso),
+                reasons: riskReasons(task, tasks, todayIso),
                 dependency: unresolvedDependency(task, tasks),
                 isRestDay: !workingDays.includes(weekdayOfISO(cell.iso)) || holiday !== null,
                 holidayName: holiday?.name ?? null,
@@ -203,9 +204,11 @@ export function CalendarView({
                 </span>
               </p>
               <div className="space-y-0.5">
-                {dayTasks.slice(0, MAX_VISIBLE_PER_DAY).map(({ task, pct, risk, dependency, isRestDay, holidayName }) => {
+                {dayTasks.slice(0, MAX_VISIBLE_PER_DAY).map(({ task, pct, reasons, dependency, isRestDay, holidayName }) => {
+                  const risk = reasons.length > 0;
                   const color = colorForProject(task.projectId);
                   const titleParts = [memberName(task.assigneeId) ?? t('unassigned'), t(STATUS_KEY[task.status])];
+                  for (const r of reasons) titleParts.push(`⚠ ${t(RISK_REASON_KEY[r])}`);
                   if (dependency) titleParts.push(`${t('dependsOn')}: ${taskTitle(dependency, lang)}`);
                   if (isRestDay) titleParts.push(holidayName ?? t('restDay'));
                   const showAsRest = isRestDay && !risk;
@@ -213,7 +216,7 @@ export function CalendarView({
                     <button
                       key={task.id}
                       type="button"
-                      onClick={onOpenTask}
+                      onClick={() => onOpenTask(task.id)}
                       title={titleParts.join(' · ')}
                       className={`block w-full truncate rounded px-1 py-0.5 text-left text-[11px] font-medium hover:opacity-80 ${
                         risk
@@ -273,9 +276,3 @@ export function CalendarView({
   );
 }
 
-const STATUS_KEY: Record<Task['status'], 'statusTodo' | 'statusInProgress' | 'statusBlocked' | 'statusDone'> = {
-  todo: 'statusTodo',
-  'in-progress': 'statusInProgress',
-  blocked: 'statusBlocked',
-  done: 'statusDone',
-};

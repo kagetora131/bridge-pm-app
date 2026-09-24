@@ -1,5 +1,6 @@
 import { useI18n } from '../i18n/I18nContext';
 import {
+  behindScheduleTasks,
   blockedTasksWithDependencies,
   computeTodayFocus,
   nextRecurringMeetingOccurrence,
@@ -11,7 +12,7 @@ import {
 } from '../lib/dashboard';
 import { computeWorkforceSnapshot } from '../lib/memberStatus';
 import { formatUsd } from '../lib/budget';
-import { daysBetweenInclusive } from '../lib/taskProgress';
+import { daysBetweenInclusive, plannedPaceOnDay } from '../lib/taskProgress';
 import { browserTimezone, formatDateTimeLabel, formatHourLabel, todayISO } from '../lib/timezone';
 import { WEEKDAY_LABELS } from '../lib/weekdays';
 import { taskTitle } from '../lib/taskText';
@@ -38,6 +39,7 @@ export function Dashboard({
   projects,
   recurringMeetings,
   onNavigate,
+  onOpenTask,
 }: {
   members: Member[];
   assignments: Assignment[];
@@ -45,6 +47,7 @@ export function Dashboard({
   projects: Project[];
   recurringMeetings: RecurringMeeting[];
   onNavigate: (section: Section) => void;
+  onOpenTask: (taskId: string) => void;
 }) {
   const { t, lang } = useI18n();
   const today = todayISO();
@@ -55,9 +58,10 @@ export function Dashboard({
   const overloaded = overloadedMembers(members, assignments);
   const overBudget = overBudgetProjects(projects, assignments, members, today);
   const overdue = overdueTasks(tasks, today);
+  const behind = behindScheduleTasks(tasks, today);
   const nextMeeting = nextRecurringMeetingOccurrence(recurringMeetings, today);
   const recommended = recommendedTeamSlot(members, today);
-  const focusItems = computeTodayFocus({ overdue, overBudget, blocked, overloaded });
+  const focusItems = computeTodayFocus({ overdue, overBudget, blocked, behind, overloaded });
 
   const titleOf = (task: Task) => taskTitle(task, lang);
   const memberName = (id: string) => members.find((m) => m.id === id)?.name ?? id;
@@ -75,7 +79,7 @@ export function Dashboard({
           badgeColor="bg-rose-100 text-rose-700"
           title={titleOf(task)}
           detail={`${t('dueDate')}: ${task.dueDate} (${days}${t('daysUnit')})`}
-          onView={() => onNavigate('members')}
+          onView={() => onOpenTask(task.id)}
         />
       );
     }
@@ -105,7 +109,21 @@ export function Dashboard({
           badgeColor="bg-amber-100 text-amber-800"
           title={titleOf(task)}
           detail={`${t('dependsOn')}: ${dependency ? titleOf(dependency) : t('dashboardNoDependencyShort')}`}
-          onView={() => onNavigate('members')}
+          onView={() => onOpenTask(task.id)}
+        />
+      );
+    }
+    if (item.kind === 'behindScheduleTask') {
+      const task = tasks.find((tk) => tk.id === item.refId);
+      if (!task) return null;
+      return (
+        <FocusRow
+          key={idx}
+          badge={t('dashboardBehindBadge')}
+          badgeColor="bg-amber-100 text-amber-800"
+          title={titleOf(task)}
+          detail={t('progressVsPlanned', { actual: task.actualProgress ?? 0, planned: plannedPaceOnDay(task, today) ?? '—' })}
+          onView={() => onOpenTask(task.id)}
         />
       );
     }
@@ -177,10 +195,14 @@ export function Dashboard({
             <ul className="space-y-2 text-xs text-slate-600">
               {blocked.map(({ task, dependency }) => (
                 <li key={task.id}>
-                  <p className="font-medium text-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => onOpenTask(task.id)}
+                    className="text-left font-medium text-slate-800 hover:underline"
+                  >
                     {projectName(task.projectId) && <span className="text-slate-400">{projectName(task.projectId)} · </span>}
                     {titleOf(task)}
-                  </p>
+                  </button>
                   <p className="text-slate-400">
                     {t('dependsOn')}: {dependency ? titleOf(dependency) : t('dashboardNoDependencyShort')}
                   </p>
