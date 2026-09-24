@@ -1,0 +1,723 @@
+{
+  "_readme": {
+    "説明": "ゲーム開発スタジオ向けブリッジPMアプリの開発用ダミーデータです。各拠点が実際の業界特性を反映した「得意分野」を担当する設計にしています。",
+    "拠点ごとの役割方針": {
+      "Tokyo": "開発コア機能（企画・プログラム・アート・テスト）を担う本社スタジオ",
+      "MexicoCity": "スペイン語圏（中南米市場）向けローカライズ＋QAテスト。中南米はQA/ローカライズ人材の集積地として実際に活用が進んでいる地域",
+      "Paris": "EU圏市場のPR・多言語（フランス語ほかEU諸語）ローカライズ＋QAテスト拠点。欧州はQA/ローカライズのアウトソーシング先として実績が多い地域",
+      "LosAngeles": "北米PR・QAテスト・英語吹替（音声収録）。ハリウッドの声優・音声制作インフラを活用",
+      "NewYork": "北米メディア向けPR専任。金融・メディアの中心地としてのPR機能に特化",
+      "Dubai": "アラビア語ローカライズ＋MENA（中東・北アフリカ）市場向け事業開発。サウジ・UAE等の政府系ファンドによるゲーム産業投資拡大を背景に、成長市場として重視"
+    },
+    "拠点・タイムゾーン": {
+      "Tokyo": {
+        "tz": "Asia/Tokyo (UTC+9)",
+        "標準勤務曜日": "月〜金"
+      },
+      "Paris": {
+        "tz": "Europe/Paris (UTC+2, サマータイム中)",
+        "標準勤務曜日": "月〜金"
+      },
+      "MexicoCity": {
+        "tz": "America/Mexico_City (UTC-6, 通年固定)",
+        "標準勤務曜日": "月〜金"
+      },
+      "NewYork": {
+        "tz": "America/New_York (UTC-4, サマータイム中)",
+        "標準勤務曜日": "月〜金"
+      },
+      "LosAngeles": {
+        "tz": "America/Los_Angeles (UTC-7, サマータイム中)",
+        "標準勤務曜日": "月〜金"
+      },
+      "Dubai": {
+        "tz": "Asia/Dubai (UTC+4, 通年固定)",
+        "標準勤務曜日": "日〜木（金土が週末）"
+      }
+    },
+    "設計メモ": "ドバイは金・土曜が週末で日曜が勤務日という、他拠点(土日休み)と丸ごとズレる稼働曜日を持つ。単純な時差計算だけでなく「そもそもその曜日が稼働日か」の判定が必要になる点が実装のポイント。",
+    "overload_ルール": "staffのweekly_capacity_hoursを、assignmentsの allocated_hours_per_week 合計が超えている場合 is_overloaded=true とする",
+    "overload検証結果": [
+      {
+        "name": "佐藤 健太",
+        "拠点": "Tokyo",
+        "役割": "企画",
+        "配分合計": 40,
+        "上限": 40,
+        "過負荷": false
+      },
+      {
+        "name": "田中 亮",
+        "拠点": "Tokyo",
+        "役割": "プログラム",
+        "配分合計": 40,
+        "上限": 40,
+        "過負荷": false
+      },
+      {
+        "name": "山田 愛子",
+        "拠点": "Tokyo",
+        "役割": "アート",
+        "配分合計": 40,
+        "上限": 40,
+        "過負荷": false
+      },
+      {
+        "name": "望月 さくら",
+        "拠点": "Tokyo",
+        "役割": "テスト（QA）",
+        "配分合計": 40,
+        "上限": 40,
+        "過負荷": false
+      },
+      {
+        "name": "高橋 舞",
+        "拠点": "Tokyo",
+        "役割": "ブリッジPM",
+        "配分合計": 45,
+        "上限": 45,
+        "過負荷": false
+      },
+      {
+        "name": "Sofía Hernández",
+        "拠点": "MexicoCity",
+        "役割": "ローカライズ・テスト（スペイン語圏）",
+        "配分合計": 45,
+        "上限": 40,
+        "過負荷": true
+      },
+      {
+        "name": "Camille Dubois",
+        "拠点": "Paris",
+        "役割": "テスト・ローカライズ（EU諸語）",
+        "配分合計": 40,
+        "上限": 40,
+        "過負荷": false
+      },
+      {
+        "name": "Élise Martin",
+        "拠点": "Paris",
+        "役割": "EU圏PR",
+        "配分合計": 30,
+        "上限": 40,
+        "過負荷": false
+      },
+      {
+        "name": "David Kim",
+        "拠点": "LosAngeles",
+        "役割": "PR",
+        "配分合計": 20,
+        "上限": 35,
+        "過負荷": false
+      },
+      {
+        "name": "Jessica Reyes",
+        "拠点": "LosAngeles",
+        "役割": "テスト（QA）",
+        "配分合計": 40,
+        "上限": 35,
+        "過負荷": true
+      },
+      {
+        "name": "Marcus Bell",
+        "拠点": "LosAngeles",
+        "役割": "吹替（英語音声収録）",
+        "配分合計": 15,
+        "上限": 25,
+        "過負荷": false
+      },
+      {
+        "name": "Emily Carter",
+        "拠点": "NewYork",
+        "役割": "PR",
+        "配分合計": 25,
+        "上限": 40,
+        "過負荷": false
+      },
+      {
+        "name": "Ahmed Al-Farsi",
+        "拠点": "Dubai",
+        "役割": "ローカライズ（アラビア語）・MENA市場事業開発",
+        "配分合計": 30,
+        "上限": 40,
+        "過負荷": false
+      }
+    ],
+    "予算機能について": "各プロジェクトにbudget情報を追加。weekly_burn_rate_usdは現在のassignments(staff×時間単価)から算出。cost_per_extra_business_day_usdは「スケジュールを1営業日延長した場合の追加コスト目安」として、UI上でスライダー等により日数を増減させて追加コストをシミュレーションする機能に使う想定。",
+    "日付更新メモ": "2026-09-12を閲覧基準日として、タスクの期限日を更新しました。tk05（アラビア語ローカライズ、未着手）のみ意図的に期限超過状態を残しています。「リスクの地図」表示（期限超過・ブロック中の強調表示）の動作確認用テストケースとして使ってください。それ以外のタスクは基準日から見て順調に進行中/未来の期限になるよう更新しています。"
+  },
+  "staff": [
+    {
+      "id": "st01",
+      "name": "佐藤 健太",
+      "role": "企画",
+      "location": "Tokyo",
+      "timezone": "Asia/Tokyo",
+      "local_working_hours": "09:00-18:00",
+      "working_days": [
+        "月",
+        "火",
+        "水",
+        "木",
+        "金"
+      ],
+      "weekly_capacity_hours": 40,
+      "total_allocated_hours_per_week": 40,
+      "is_overloaded": false,
+      "hourly_rate_usd": 35
+    },
+    {
+      "id": "st02",
+      "name": "田中 亮",
+      "role": "プログラム",
+      "location": "Tokyo",
+      "timezone": "Asia/Tokyo",
+      "local_working_hours": "09:00-18:00",
+      "working_days": [
+        "月",
+        "火",
+        "水",
+        "木",
+        "金"
+      ],
+      "weekly_capacity_hours": 40,
+      "total_allocated_hours_per_week": 40,
+      "is_overloaded": false,
+      "hourly_rate_usd": 35
+    },
+    {
+      "id": "st03",
+      "name": "山田 愛子",
+      "role": "アート",
+      "location": "Tokyo",
+      "timezone": "Asia/Tokyo",
+      "local_working_hours": "10:00-19:00",
+      "working_days": [
+        "月",
+        "火",
+        "水",
+        "木",
+        "金"
+      ],
+      "weekly_capacity_hours": 40,
+      "total_allocated_hours_per_week": 40,
+      "is_overloaded": false,
+      "hourly_rate_usd": 33
+    },
+    {
+      "id": "st04",
+      "name": "望月 さくら",
+      "role": "テスト（QA）",
+      "location": "Tokyo",
+      "timezone": "Asia/Tokyo",
+      "local_working_hours": "09:00-18:00",
+      "working_days": [
+        "月",
+        "火",
+        "水",
+        "木",
+        "金"
+      ],
+      "weekly_capacity_hours": 40,
+      "total_allocated_hours_per_week": 40,
+      "is_overloaded": false,
+      "hourly_rate_usd": 30
+    },
+    {
+      "id": "st05",
+      "name": "高橋 舞",
+      "role": "ブリッジPM",
+      "location": "Tokyo",
+      "timezone": "Asia/Tokyo",
+      "local_working_hours": "09:00-19:00",
+      "working_days": [
+        "月",
+        "火",
+        "水",
+        "木",
+        "金"
+      ],
+      "weekly_capacity_hours": 45,
+      "total_allocated_hours_per_week": 45,
+      "is_overloaded": false,
+      "hourly_rate_usd": 45
+    },
+    {
+      "id": "st06",
+      "name": "Sofía Hernández",
+      "role": "ローカライズ・テスト（スペイン語圏）",
+      "location": "MexicoCity",
+      "timezone": "America/Mexico_City",
+      "local_working_hours": "09:00-18:00",
+      "working_days": [
+        "月",
+        "火",
+        "水",
+        "木",
+        "金"
+      ],
+      "weekly_capacity_hours": 40,
+      "total_allocated_hours_per_week": 45,
+      "is_overloaded": true,
+      "hourly_rate_usd": 20
+    },
+    {
+      "id": "st07",
+      "name": "Camille Dubois",
+      "role": "テスト・ローカライズ（EU諸語）",
+      "location": "Paris",
+      "timezone": "Europe/Paris",
+      "local_working_hours": "09:00-18:00",
+      "working_days": [
+        "月",
+        "火",
+        "水",
+        "木",
+        "金"
+      ],
+      "weekly_capacity_hours": 40,
+      "total_allocated_hours_per_week": 40,
+      "is_overloaded": false,
+      "hourly_rate_usd": 42
+    },
+    {
+      "id": "st08",
+      "name": "Élise Martin",
+      "role": "EU圏PR",
+      "location": "Paris",
+      "timezone": "Europe/Paris",
+      "local_working_hours": "09:30-18:30",
+      "working_days": [
+        "月",
+        "火",
+        "水",
+        "木",
+        "金"
+      ],
+      "weekly_capacity_hours": 40,
+      "total_allocated_hours_per_week": 30,
+      "is_overloaded": false,
+      "hourly_rate_usd": 45
+    },
+    {
+      "id": "st09",
+      "name": "David Kim",
+      "role": "PR",
+      "location": "LosAngeles",
+      "timezone": "America/Los_Angeles",
+      "local_working_hours": "10:00-18:00",
+      "working_days": [
+        "月",
+        "火",
+        "水",
+        "木",
+        "金"
+      ],
+      "weekly_capacity_hours": 35,
+      "total_allocated_hours_per_week": 20,
+      "is_overloaded": false,
+      "hourly_rate_usd": 60
+    },
+    {
+      "id": "st10",
+      "name": "Jessica Reyes",
+      "role": "テスト（QA）",
+      "location": "LosAngeles",
+      "timezone": "America/Los_Angeles",
+      "local_working_hours": "09:00-17:00",
+      "working_days": [
+        "月",
+        "火",
+        "水",
+        "木",
+        "金"
+      ],
+      "weekly_capacity_hours": 35,
+      "total_allocated_hours_per_week": 40,
+      "is_overloaded": true,
+      "hourly_rate_usd": 55
+    },
+    {
+      "id": "st11",
+      "name": "Marcus Bell",
+      "role": "吹替（英語音声収録）",
+      "location": "LosAngeles",
+      "timezone": "America/Los_Angeles",
+      "local_working_hours": "11:00-19:00",
+      "working_days": [
+        "月",
+        "火",
+        "水",
+        "木",
+        "金"
+      ],
+      "weekly_capacity_hours": 25,
+      "備考": "音声収録スタジオの稼働時間に合わせた業務委託契約",
+      "total_allocated_hours_per_week": 15,
+      "is_overloaded": false,
+      "hourly_rate_usd": 70
+    },
+    {
+      "id": "st12",
+      "name": "Emily Carter",
+      "role": "PR",
+      "location": "NewYork",
+      "timezone": "America/New_York",
+      "local_working_hours": "09:00-17:00",
+      "working_days": [
+        "月",
+        "火",
+        "水",
+        "木",
+        "金"
+      ],
+      "weekly_capacity_hours": 40,
+      "total_allocated_hours_per_week": 25,
+      "is_overloaded": false,
+      "hourly_rate_usd": 65
+    },
+    {
+      "id": "st13",
+      "name": "Ahmed Al-Farsi",
+      "role": "ローカライズ（アラビア語）・MENA市場事業開発",
+      "location": "Dubai",
+      "timezone": "Asia/Dubai",
+      "local_working_hours": "09:00-17:00",
+      "working_days": [
+        "日",
+        "月",
+        "火",
+        "水",
+        "木"
+      ],
+      "weekly_capacity_hours": 40,
+      "備考": "金・土曜が週末のため、他拠点と稼働曜日が丸ごとズレる",
+      "total_allocated_hours_per_week": 30,
+      "is_overloaded": false,
+      "hourly_rate_usd": 38
+    }
+  ],
+  "projects": [
+    {
+      "id": "pj01",
+      "name": "サムライゴースト",
+      "genre": "アクションRPG",
+      "status": "進行中",
+      "phase": "ローカライズ／PR準備",
+      "start_date": "2026-05-01",
+      "target_release": "2027-03-01",
+      "budget": {
+        "currency": "USD",
+        "total_budget_usd": 400000,
+        "weekly_burn_rate_usd": 10455,
+        "spent_to_date_usd": 200138.57,
+        "projected_total_cost_usd": 454045.71,
+        "is_over_budget_projected": true,
+        "budget_variance_usd": -54045.71,
+        "cost_per_extra_business_day_usd": 2091.0,
+        "算出前提": "開始日(2026-05-01)から目標リリース日(2027-03-01)まで現在の人員配置(週次バーンレート)が変わらないと仮定した単純計算。実際にはフェーズごとに人員構成が変わるため目安値。基準日:2026-09-12"
+      }
+    },
+    {
+      "id": "pj02",
+      "name": "ネオトーキョー2088",
+      "genre": "アクション",
+      "status": "進行中",
+      "phase": "アート／プログラム",
+      "start_date": "2026-07-01",
+      "target_release": "2027-09-01",
+      "budget": {
+        "currency": "USD",
+        "total_budget_usd": 450000,
+        "weekly_burn_rate_usd": 6135,
+        "spent_to_date_usd": 63979.29,
+        "projected_total_cost_usd": 374235.0,
+        "is_over_budget_projected": false,
+        "budget_variance_usd": 75765.0,
+        "cost_per_extra_business_day_usd": 1227.0,
+        "算出前提": "開始日(2026-07-01)から目標リリース日(2027-09-01)まで現在の人員配置(週次バーンレート)が変わらないと仮定した単純計算。実際にはフェーズごとに人員構成が変わるため目安値。基準日:2026-09-12"
+      }
+    },
+    {
+      "id": "pj03",
+      "name": "忍者パズルクエスト",
+      "genre": "パズル",
+      "status": "立ち上げ",
+      "phase": "企画",
+      "start_date": "2026-08-01",
+      "target_release": "2027-01-15",
+      "budget": {
+        "currency": "USD",
+        "total_budget_usd": 60000,
+        "weekly_burn_rate_usd": 1900,
+        "spent_to_date_usd": 11400.0,
+        "projected_total_cost_usd": 45328.57,
+        "is_over_budget_projected": false,
+        "budget_variance_usd": 14671.43,
+        "cost_per_extra_business_day_usd": 380.0,
+        "算出前提": "開始日(2026-08-01)から目標リリース日(2027-01-15)まで現在の人員配置(週次バーンレート)が変わらないと仮定した単純計算。実際にはフェーズごとに人員構成が変わるため目安値。基準日:2026-09-12"
+      }
+    }
+  ],
+  "assignments": [
+    {
+      "staff_id": "st01",
+      "project_id": "pj01",
+      "role_in_project": "企画",
+      "allocated_hours_per_week": 5
+    },
+    {
+      "staff_id": "st01",
+      "project_id": "pj03",
+      "role_in_project": "企画",
+      "allocated_hours_per_week": 35
+    },
+    {
+      "staff_id": "st02",
+      "project_id": "pj01",
+      "role_in_project": "プログラム",
+      "allocated_hours_per_week": 10
+    },
+    {
+      "staff_id": "st02",
+      "project_id": "pj02",
+      "role_in_project": "プログラム",
+      "allocated_hours_per_week": 30
+    },
+    {
+      "staff_id": "st03",
+      "project_id": "pj02",
+      "role_in_project": "アート",
+      "allocated_hours_per_week": 40
+    },
+    {
+      "staff_id": "st04",
+      "project_id": "pj01",
+      "role_in_project": "テスト",
+      "allocated_hours_per_week": 15
+    },
+    {
+      "staff_id": "st04",
+      "project_id": "pj02",
+      "role_in_project": "テスト",
+      "allocated_hours_per_week": 25
+    },
+    {
+      "staff_id": "st05",
+      "project_id": "pj01",
+      "role_in_project": "ブリッジPM",
+      "allocated_hours_per_week": 15
+    },
+    {
+      "staff_id": "st05",
+      "project_id": "pj02",
+      "role_in_project": "ブリッジPM",
+      "allocated_hours_per_week": 15
+    },
+    {
+      "staff_id": "st05",
+      "project_id": "pj03",
+      "role_in_project": "ブリッジPM",
+      "allocated_hours_per_week": 15
+    },
+    {
+      "staff_id": "st06",
+      "project_id": "pj01",
+      "role_in_project": "ローカライズ・テスト",
+      "allocated_hours_per_week": 25
+    },
+    {
+      "staff_id": "st06",
+      "project_id": "pj02",
+      "role_in_project": "ローカライズ・テスト",
+      "allocated_hours_per_week": 20
+    },
+    {
+      "staff_id": "st07",
+      "project_id": "pj01",
+      "role_in_project": "テスト・ローカライズ",
+      "allocated_hours_per_week": 20
+    },
+    {
+      "staff_id": "st07",
+      "project_id": "pj02",
+      "role_in_project": "テスト・ローカライズ",
+      "allocated_hours_per_week": 20
+    },
+    {
+      "staff_id": "st08",
+      "project_id": "pj01",
+      "role_in_project": "EU圏PR",
+      "allocated_hours_per_week": 30
+    },
+    {
+      "staff_id": "st09",
+      "project_id": "pj01",
+      "role_in_project": "PR",
+      "allocated_hours_per_week": 20
+    },
+    {
+      "staff_id": "st10",
+      "project_id": "pj01",
+      "role_in_project": "テスト",
+      "allocated_hours_per_week": 20
+    },
+    {
+      "staff_id": "st10",
+      "project_id": "pj02",
+      "role_in_project": "テスト",
+      "allocated_hours_per_week": 20
+    },
+    {
+      "staff_id": "st11",
+      "project_id": "pj01",
+      "role_in_project": "吹替",
+      "allocated_hours_per_week": 15
+    },
+    {
+      "staff_id": "st12",
+      "project_id": "pj01",
+      "role_in_project": "PR",
+      "allocated_hours_per_week": 25
+    },
+    {
+      "staff_id": "st13",
+      "project_id": "pj01",
+      "role_in_project": "ローカライズ・事業開発",
+      "allocated_hours_per_week": 30
+    }
+  ],
+  "tasks": [
+    {
+      "id": "tk01",
+      "project_id": "pj01",
+      "phase": "企画",
+      "title": "リリース版シナリオ最終稿確定",
+      "assigned_staff_id": "st01",
+      "status": "完了",
+      "depends_on": null,
+      "due_date": "2026-06-01"
+    },
+    {
+      "id": "tk02",
+      "project_id": "pj01",
+      "phase": "テスト",
+      "title": "英語版QAテスト",
+      "assigned_staff_id": "st04",
+      "status": "完了",
+      "depends_on": "tk01",
+      "due_date": "2026-07-15"
+    },
+    {
+      "id": "tk03",
+      "project_id": "pj01",
+      "phase": "ローカライズ",
+      "title": "スペイン語ローカライズ・QA",
+      "assigned_staff_id": "st06",
+      "status": "進行中",
+      "depends_on": "tk02",
+      "due_date": "2026-09-20"
+    },
+    {
+      "id": "tk04",
+      "project_id": "pj01",
+      "phase": "ローカライズ",
+      "title": "フランス語ほかEU諸語ローカライズ・QA",
+      "assigned_staff_id": "st07",
+      "status": "進行中",
+      "depends_on": "tk02",
+      "due_date": "2026-09-22"
+    },
+    {
+      "id": "tk05",
+      "project_id": "pj01",
+      "phase": "ローカライズ",
+      "title": "アラビア語ローカライズ",
+      "assigned_staff_id": "st13",
+      "status": "未着手",
+      "depends_on": "tk02",
+      "due_date": "2026-09-08"
+    },
+    {
+      "id": "tk06",
+      "project_id": "pj01",
+      "phase": "吹替",
+      "title": "英語版フルボイス収録",
+      "assigned_staff_id": "st11",
+      "status": "未着手",
+      "depends_on": "tk02",
+      "due_date": "2026-09-25"
+    },
+    {
+      "id": "tk07",
+      "project_id": "pj01",
+      "phase": "PR",
+      "title": "北米向けプロモーション計画",
+      "assigned_staff_id": "st09",
+      "status": "ブロック中",
+      "depends_on": "tk06",
+      "due_date": "2026-10-05",
+      "備考": "英語吹替素材が完成するまでプロモ動画を作れずブロック中"
+    },
+    {
+      "id": "tk08",
+      "project_id": "pj01",
+      "phase": "PR",
+      "title": "EU圏向けプロモーション計画",
+      "assigned_staff_id": "st08",
+      "status": "未着手",
+      "depends_on": "tk04",
+      "due_date": "2026-10-05"
+    },
+    {
+      "id": "tk09",
+      "project_id": "pj01",
+      "phase": "PR",
+      "title": "北米メディア向けプレスリリース",
+      "assigned_staff_id": "st12",
+      "status": "未着手",
+      "depends_on": "tk07",
+      "due_date": "2026-10-12"
+    },
+    {
+      "id": "tk10",
+      "project_id": "pj02",
+      "phase": "アート",
+      "title": "主人公キャラクターデザイン確定",
+      "assigned_staff_id": "st03",
+      "status": "進行中",
+      "depends_on": null,
+      "due_date": "2026-09-25"
+    },
+    {
+      "id": "tk11",
+      "project_id": "pj02",
+      "phase": "プログラム",
+      "title": "キャラクター実装（仮モデル）",
+      "assigned_staff_id": "st02",
+      "status": "未着手",
+      "depends_on": "tk10",
+      "due_date": "2026-10-10"
+    },
+    {
+      "id": "tk12",
+      "project_id": "pj02",
+      "phase": "テスト",
+      "title": "初期ビルド動作確認",
+      "assigned_staff_id": "st10",
+      "status": "未着手",
+      "depends_on": "tk11",
+      "due_date": "2026-10-25"
+    },
+    {
+      "id": "tk13",
+      "project_id": "pj03",
+      "phase": "企画",
+      "title": "起承転結プロット第1稿",
+      "assigned_staff_id": "st01",
+      "status": "進行中",
+      "depends_on": null,
+      "due_date": "2026-09-18"
+    }
+  ]
+}

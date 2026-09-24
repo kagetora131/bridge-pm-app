@@ -61,6 +61,8 @@ export interface Task {
   startDate: string | null; // ISO date "yyyy-MM-dd" — when work on this task begins
   dueDate: string | null; // ISO date "yyyy-MM-dd"
   status: TaskStatus;
+  /** Human-entered actual completion (0-100), separate from the date-based planned pace; null = not recorded. */
+  actualProgress: number | null;
   dependsOn: string | null; // another task's id
   createdAt: string; // ISO datetime
 }

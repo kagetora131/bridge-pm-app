@@ -14,6 +14,7 @@ import { formatUsd } from '../lib/budget';
 import { daysBetweenInclusive } from '../lib/taskProgress';
 import { browserTimezone, formatDateTimeLabel, formatHourLabel, todayISO } from '../lib/timezone';
 import { WEEKDAY_LABELS } from '../lib/weekdays';
+import { taskTitle } from '../lib/taskText';
 import type { Section } from './Header';
 import type { Assignment, Member, Project, RecurringMeeting, Task } from '../types';
 
@@ -58,7 +59,7 @@ export function Dashboard({
   const recommended = recommendedTeamSlot(members, today);
   const focusItems = computeTodayFocus({ overdue, overBudget, blocked, overloaded });
 
-  const taskTitle = (task: Task) => task.titleJa || task.titleEn;
+  const titleOf = (task: Task) => taskTitle(task, lang);
   const memberName = (id: string) => members.find((m) => m.id === id)?.name ?? id;
   const projectName = (id: string | null) => (id ? (projects.find((p) => p.id === id)?.name ?? id) : null);
 
@@ -72,7 +73,7 @@ export function Dashboard({
           key={idx}
           badge={t('dashboardOverdueBadge')}
           badgeColor="bg-rose-100 text-rose-700"
-          title={taskTitle(task)}
+          title={titleOf(task)}
           detail={`${t('dueDate')}: ${task.dueDate} (${days}${t('daysUnit')})`}
           onView={() => onNavigate('members')}
         />
@@ -102,8 +103,8 @@ export function Dashboard({
           key={idx}
           badge={t('statusBlocked')}
           badgeColor="bg-amber-100 text-amber-800"
-          title={taskTitle(task)}
-          detail={`${t('dependsOn')}: ${dependency ? taskTitle(dependency) : t('dashboardNoDependencyShort')}`}
+          title={titleOf(task)}
+          detail={`${t('dependsOn')}: ${dependency ? titleOf(dependency) : t('dashboardNoDependencyShort')}`}
           onView={() => onNavigate('members')}
         />
       );
@@ -178,10 +179,10 @@ export function Dashboard({
                 <li key={task.id}>
                   <p className="font-medium text-slate-800">
                     {projectName(task.projectId) && <span className="text-slate-400">{projectName(task.projectId)} · </span>}
-                    {taskTitle(task)}
+                    {titleOf(task)}
                   </p>
                   <p className="text-slate-400">
-                    {t('dependsOn')}: {dependency ? taskTitle(dependency) : t('dashboardNoDependencyShort')}
+                    {t('dependsOn')}: {dependency ? titleOf(dependency) : t('dashboardNoDependencyShort')}
                   </p>
                 </li>
               ))}

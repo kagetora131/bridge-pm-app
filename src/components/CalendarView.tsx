@@ -8,6 +8,7 @@ import { computeScheduleConflictRanges } from '../lib/scheduleConflicts';
 import { colorForProject } from '../lib/projectColors';
 import { todayISO } from '../lib/timezone';
 import { holidayOn } from '../lib/holidays';
+import { taskTitle } from '../lib/taskText';
 import type { Member, Project, Task } from '../types';
 
 const MAX_VISIBLE_PER_DAY = 4;
@@ -205,7 +206,7 @@ export function CalendarView({
                 {dayTasks.slice(0, MAX_VISIBLE_PER_DAY).map(({ task, pct, risk, dependency, isRestDay, holidayName }) => {
                   const color = colorForProject(task.projectId);
                   const titleParts = [memberName(task.assigneeId) ?? t('unassigned'), t(STATUS_KEY[task.status])];
-                  if (dependency) titleParts.push(`${t('dependsOn')}: ${dependency.titleJa || dependency.titleEn}`);
+                  if (dependency) titleParts.push(`${t('dependsOn')}: ${taskTitle(dependency, lang)}`);
                   if (isRestDay) titleParts.push(holidayName ?? t('restDay'));
                   const showAsRest = isRestDay && !risk;
                   return (
@@ -223,7 +224,7 @@ export function CalendarView({
                       }`}
                     >
                       {risk && '⚠ '}
-                      <span className="truncate">{task.titleJa || task.titleEn}</span>
+                      <span className="truncate">{taskTitle(task, lang)}</span>
                       {showAsRest ? (
                         <span className="ml-1 font-normal">({t('restDayShort')})</span>
                       ) : (

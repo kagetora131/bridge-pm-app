@@ -6,7 +6,8 @@ import { loadJSON, saveJSON } from '../lib/storage';
 interface I18nValue {
   lang: UILang;
   setLang: (lang: UILang) => void;
-  t: (key: TranslationKey) => string;
+  /** Looks up a UI string; `{name}` placeholders are filled from `vars`. */
+  t: (key: TranslationKey, vars?: Record<string, string | number>) => string;
 }
 
 const I18nContext = createContext<I18nValue | null>(null);
@@ -74,7 +75,11 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     () => ({
       lang,
       setLang,
-      t: (key) => dictionaries[lang][key] ?? dictionaries.ja[key],
+      t: (key, vars) => {
+        const template: string = dictionaries[lang][key] ?? dictionaries.ja[key];
+        if (!vars) return template;
+        return template.replace(/\{(\w+)\}/g, (match, name: string) => (name in vars ? String(vars[name]) : match));
+      },
     }),
     [lang],
   );

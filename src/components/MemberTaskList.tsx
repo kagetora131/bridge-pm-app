@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
 import { newId } from '../lib/storage';
 import { taskAmbiguousPhrases, taskGlossaryMismatches } from '../lib/translationWorkflow';
+import { taskSecondaryTitle, taskTitle } from '../lib/taskText';
 import type { GlossaryTerm, Project, Task, TaskStatus, TranslationStatus } from '../types';
 
 const STATUS_ORDER: TaskStatus[] = ['todo', 'in-progress', 'blocked', 'done'];
@@ -56,7 +57,7 @@ export function MemberTaskList({
   projects: Project[];
   glossary: GlossaryTerm[];
 }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState(emptyDraft);
@@ -66,7 +67,6 @@ export function MemberTaskList({
     .sort((a, b) => (a.dueDate ?? '').localeCompare(b.dueDate ?? ''));
 
   const projectName = (id: string | null) => projects.find((p) => p.id === id)?.name;
-  const taskTitle = (task: Task | undefined) => task && (task.titleJa || task.titleEn);
 
   const startAdd = () => {
     setDraft(emptyDraft);
@@ -126,6 +126,7 @@ export function MemberTaskList({
         startDate: draft.startDate || null,
         dueDate: draft.dueDate || null,
         status: draft.status,
+        actualProgress: null,
         dependsOn: draft.dependsOn || null,
         createdAt: new Date().toISOString(),
       };
@@ -162,7 +163,7 @@ export function MemberTaskList({
               .filter((task) => task.id !== editingId)
               .map((task) => (
                 <option key={task.id} value={task.id}>
-                  {taskTitle(task)}
+                  {taskTitle(task, lang)}
                 </option>
               ))}
           </select>
@@ -249,13 +250,13 @@ export function MemberTaskList({
               <li key={task.id} className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
                 <span className="min-w-0 truncate">
                   {projectName(task.projectId) && <span className="text-slate-400">{projectName(task.projectId)} · </span>}
-                  {task.titleJa}
-                  {task.titleEn && <span className="text-slate-400"> / {task.titleEn}</span>}
+                  {taskTitle(task, lang)}
+                  {taskSecondaryTitle(task, lang) && <span className="text-slate-400"> / {taskSecondaryTitle(task, lang)}</span>}
                   {task.startDate && task.dueDate && (
                     <span className="text-slate-400"> ({task.startDate} 〜 {task.dueDate})</span>
                   )}
                   {!task.startDate && task.dueDate && <span className="text-slate-400"> ({t('dueDate')}: {task.dueDate})</span>}
-                  {dependencyUnresolved && <span className="text-rose-600"> ⚠ {t('dependsOn')}: {taskTitle(dependency)}</span>}
+                  {dependencyUnresolved && <span className="text-rose-600"> ⚠ {t('dependsOn')}: {dependency && taskTitle(dependency, lang)}</span>}
                   {glossaryMismatches.length > 0 && (
                     <span className="text-amber-600" title={glossaryMismatches.map((m) => `${m.termJa} → ${m.termEn}`).join(', ')}>
                       {' '}
