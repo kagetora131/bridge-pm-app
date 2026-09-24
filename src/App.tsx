@@ -9,6 +9,7 @@ import { Glossary } from './components/Glossary';
 import { TaskDrawer } from './components/TaskDrawer';
 import { UndoToast, type UndoAction } from './components/UndoToast';
 import { DeleteChoiceDialog, type PendingDelete } from './components/DeleteChoiceDialog';
+import { MyView } from './components/MyView';
 import { useI18n } from './i18n/I18nContext';
 import { usePersistentState } from './hooks/usePersistentState';
 import { ensureLatestSeed } from './lib/seedVersion';
@@ -45,6 +46,10 @@ export default function App() {
     'meetingBurdenLog',
     [],
   );
+
+  // A UI preference (not sample data), so it survives a sample-data reset; falls back to the overview if that member is gone.
+  const [viewerId, setViewerId] = usePersistentState<string | null>('viewerId', null);
+  const viewer = members.find((m) => m.id === viewerId) ?? null;
 
   const [openTaskId, setOpenTaskId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<PendingDelete | null>(null);
@@ -133,9 +138,26 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <Header section={section} onSectionChange={setSection} />
+      <Header
+        section={section}
+        onSectionChange={setSection}
+        members={members}
+        viewerId={viewer?.id ?? null}
+        onViewerChange={setViewerId}
+      />
       <main className="mx-auto max-w-5xl px-4 py-8">
-        {section === 'dashboard' && (
+        {section === 'dashboard' && viewer && (
+          <MyView
+            viewer={viewer}
+            tasks={tasks}
+            members={members}
+            projects={projects}
+            assignments={assignments}
+            recurringMeetings={recurringMeetings}
+            onOpenTask={setOpenTaskId}
+          />
+        )}
+        {section === 'dashboard' && !viewer && (
           <Dashboard
             members={members}
             assignments={assignments}
@@ -158,7 +180,14 @@ export default function App() {
           />
         )}
         {section === 'calendar' && (
-          <CalendarView tasks={tasks} members={members} projects={projects} onOpenTask={setOpenTaskId} />
+          <CalendarView
+            key={viewer?.id ?? 'all'}
+            tasks={tasks}
+            members={members}
+            projects={projects}
+            onOpenTask={setOpenTaskId}
+            defaultMemberId={viewer?.id}
+          />
         )}
         {section === 'members' && (
           <MemberManager
@@ -176,6 +205,8 @@ export default function App() {
         )}
         {section === 'meeting' && (
           <MeetingPlanner
+            key={viewer?.id ?? 'all'}
+            defaultTimezone={viewer?.timezone}
             members={members}
             projects={projects}
             assignments={assignments}

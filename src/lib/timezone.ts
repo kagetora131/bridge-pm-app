@@ -46,8 +46,9 @@ export function currentTimeInZone(timeZone: string): string {
 
 /** Current local date+weekday label for a timezone, e.g. "8/26 (水)". */
 export function currentDateLabelInZone(timeZone: string, locale: string): string {
-  const zoned = toZonedTime(new Date(), timeZone);
-  return zoned.toLocaleDateString(locale, {
+  // Format the real instant with `timeZone` only — shifting it with toZonedTime first
+  // would apply the offset twice and show the wrong day for non-browser timezones.
+  return new Date().toLocaleDateString(locale, {
     month: 'numeric',
     day: 'numeric',
     weekday: 'short',

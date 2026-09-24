@@ -27,9 +27,11 @@ export type RiskReason = 'blocked' | 'overdue' | 'dependency' | 'behind';
 export function riskReasons(task: Task, allTasks: Task[], todayISO: string): RiskReason[] {
   const reasons: RiskReason[] = [];
   if (task.status === 'blocked') reasons.push('blocked');
-  if (isTaskOverdue(task, todayISO)) reasons.push('overdue');
+  const overdue = isTaskOverdue(task, todayISO);
+  if (overdue) reasons.push('overdue');
   if (unresolvedDependency(task, allTasks)) reasons.push('dependency');
-  if (isBehindSchedule(task, todayISO)) reasons.push('behind');
+  // Past the due date the plan is already 100%, so "behind" would just repeat "overdue".
+  if (!overdue && isBehindSchedule(task, todayISO)) reasons.push('behind');
   return reasons;
 }
 

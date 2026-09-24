@@ -3,7 +3,7 @@ import { useI18n } from '../i18n/I18nContext';
 import { newId } from '../lib/storage';
 import { taskAmbiguousPhrases, taskGlossaryMismatches } from '../lib/translationWorkflow';
 import { taskSecondaryTitle, taskTitle } from '../lib/taskText';
-import { isBehindSchedule, unresolvedDependency } from '../lib/calendarRisk';
+import { isBehindSchedule, isTaskOverdue, unresolvedDependency } from '../lib/calendarRisk';
 import { plannedPaceOnDay } from '../lib/taskProgress';
 import { applyStatus } from '../lib/taskUpdates';
 import { todayISO } from '../lib/timezone';
@@ -197,7 +197,7 @@ export function MemberTaskList({
             const glossaryMismatches = taskGlossaryMismatches(task, glossary);
             const ambiguousPhrases = taskAmbiguousPhrases(task);
             const secondary = taskSecondaryTitle(task, lang);
-            const behind = isBehindSchedule(task, today);
+            const behind = isBehindSchedule(task, today) && !isTaskOverdue(task, today);
             const planned = plannedPaceOnDay(task, today);
             return (
               <li key={task.id} className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">

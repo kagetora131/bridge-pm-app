@@ -69,7 +69,7 @@ export function nextRecurringMeetingOccurrence(
   nowMs: number = Date.now(),
   maxLookaheadDays = 21,
 ): MeetingOccurrence | null {
-  return upcomingOccurrences(meetings, fromISO, nowMs, maxLookaheadDays)[0] ?? null;
+  return upcomingOccurrences(meetings, fromISO, maxLookaheadDays, nowMs)[0] ?? null;
 }
 
 export interface RecommendedSlot {

@@ -4,6 +4,7 @@ import { resetToSampleData } from '../lib/seedVersion';
 import { downloadDataExport, importDataFromJSON } from '../lib/dataPortability';
 import { browserTimezone, currentDateLabelInZone } from '../lib/timezone';
 import { GuidedTour } from './GuidedTour';
+import type { Member } from '../types';
 
 export type Section = 'dashboard' | 'projects' | 'calendar' | 'members' | 'meeting' | 'glossary';
 
@@ -21,9 +22,15 @@ const NAV_KEY: Record<Section, 'navDashboard' | 'navProjects' | 'navCalendar' | 
 export function Header({
   section,
   onSectionChange,
+  members,
+  viewerId,
+  onViewerChange,
 }: {
   section: Section;
   onSectionChange: (s: Section) => void;
+  members: Member[];
+  viewerId: string | null;
+  onViewerChange: (memberId: string | null) => void;
 }) {
   const { t, lang, setLang } = useI18n();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -81,6 +88,23 @@ export function Header({
             </span>
           </div>
           <p className="text-sm text-slate-500">{t('appSubtitle')}</p>
+          <label className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+            <span className="font-medium">{t('viewerLabel')}:</span>
+            <select
+              className={`rounded-md border px-2 py-1 text-xs ${
+                viewerId ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-700'
+              }`}
+              value={viewerId ?? ''}
+              onChange={(e) => onViewerChange(e.target.value || null)}
+            >
+              <option value="">{t('viewerOverall')}</option>
+              {members.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
           <nav className="flex flex-wrap gap-1 rounded-lg bg-slate-100 p-1">
@@ -95,7 +119,7 @@ export function Header({
                     : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
-                {t(NAV_KEY[s])}
+                {s === 'dashboard' && viewerId ? t('navMyPage') : t(NAV_KEY[s])}
               </button>
             ))}
           </nav>

@@ -19,11 +19,13 @@ export function CalendarView({
   members,
   projects,
   onOpenTask,
+  defaultMemberId,
 }: {
   tasks: Task[];
   members: Member[];
   projects: Project[];
   onOpenTask: (taskId: string) => void;
+  defaultMemberId?: string;
 }) {
   const { t, lang } = useI18n();
   const today = useMemo(() => new Date(), []);
@@ -31,7 +33,7 @@ export function CalendarView({
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth());
   const [projectFilter, setProjectFilter] = useState<string>('all');
-  const [memberFilter, setMemberFilter] = useState<string>('all');
+  const [memberFilter, setMemberFilter] = useState<string>(defaultMemberId ?? 'all');
 
   const weeks = useMemo(() => chunk(buildMonthGrid(year, month), 7), [year, month]);
 

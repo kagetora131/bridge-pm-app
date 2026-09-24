@@ -22,8 +22,8 @@ export interface MeetingOccurrence {
 export function upcomingOccurrences(
   meetings: RecurringMeeting[],
   fromISO: string,
-  nowMs: number,
   days: number,
+  nowMs: number = Date.now(),
 ): MeetingOccurrence[] {
   const results: MeetingOccurrence[] = [];
   // Start a day early: a meeting on "yesterday" in its own timezone can still be in the future elsewhere.
@@ -67,7 +67,7 @@ export function upcomingHolidayConflicts(
   days = 56,
   nowMs: number = Date.now(),
 ): OccurrenceHolidayConflicts[] {
-  return upcomingOccurrences([meeting], fromISO, nowMs, days)
+  return upcomingOccurrences([meeting], fromISO, days, nowMs)
     .map((occurrence) => ({ occurrence, conflicts: holidayConflictsAt(meeting, members, occurrence.startMs) }))
     .filter((x) => x.conflicts.length > 0);
 }
