@@ -4,15 +4,24 @@ import { addDaysISO, browserTimezone, todayISO } from '../lib/timezone';
 import { timezonesInUse } from '../lib/timezoneList';
 import { computeWeekOccurrences, startOfWeekISO } from '../lib/meetingWeekView';
 import { WEEKDAY_LABELS } from '../lib/weekdays';
+import { holidayConflictsAt } from '../lib/recurringMeetings';
 import type { Member, RecurringMeeting } from '../types';
 
 const HOUR_HEIGHT_REM = 2.25;
 const HOURS = Array.from({ length: 24 }, (_, h) => h);
 
-export function MeetingWeekView({ meetings, members }: { meetings: RecurringMeeting[]; members: Member[] }) {
+export function MeetingWeekView({
+  meetings,
+  members,
+  defaultTimezone,
+}: {
+  meetings: RecurringMeeting[];
+  members: Member[];
+  defaultTimezone?: string;
+}) {
   const { t, lang } = useI18n();
   const [weekStart, setWeekStart] = useState(() => startOfWeekISO(todayISO()));
-  const [displayTz, setDisplayTz] = useState(browserTimezone());
+  const [displayTz, setDisplayTz] = useState(() => defaultTimezone ?? browserTimezone());
   const timezones = timezonesInUse(members);
   const weekdayLabels = WEEKDAY_LABELS[lang];
 
@@ -107,30 +116,44 @@ export function MeetingWeekView({ meetings, members }: { meetings: RecurringMeet
               ))}
 
               <div className="pointer-events-none absolute inset-0">
-                {occurrences.map(({ meeting, dayIndex, startMinuteOfDay, endMinuteOfDay }) => (
-                  <button
-                    key={`${meeting.id}-${dayIndex}`}
-                    type="button"
-                    title={meeting.participantIds.map(memberName).join(', ')}
-                    className="pointer-events-auto absolute overflow-hidden rounded bg-indigo-500 px-1 py-0.5 text-left text-[10px] font-medium text-white hover:bg-indigo-600"
-                    style={{
-                      left: `calc(${(dayIndex / 7) * 100}% + 2px)`,
-                      width: `calc(${(1 / 7) * 100}% - 4px)`,
-                      top: `${(startMinuteOfDay / 60) * HOUR_HEIGHT_REM}rem`,
-                      height: `${Math.max(1, ((endMinuteOfDay - startMinuteOfDay) / 60) * HOUR_HEIGHT_REM)}rem`,
-                    }}
-                  >
-                    <div className="truncate">{meeting.title}</div>
-                    <div className="truncate text-indigo-100">
-                      {String(Math.floor(startMinuteOfDay / 60)).padStart(2, '0')}:{String(startMinuteOfDay % 60).padStart(2, '0')}
-                    </div>
-                  </button>
-                ))}
+                {occurrences.map(({ meeting, dayIndex, startMinuteOfDay, endMinuteOfDay, startMs }) => {
+                  const conflicts = holidayConflictsAt(meeting, members, startMs);
+                  const hasConflict = conflicts.length > 0;
+                  const tooltip = [
+                    meeting.participantIds.map(memberName).join(', '),
+                    ...conflicts.map((c) => `⚠ ${memberName(c.memberId)}: ${c.holidayName}`),
+                  ].join('\n');
+                  return (
+                    <button
+                      key={`${meeting.id}-${dayIndex}`}
+                      type="button"
+                      title={tooltip}
+                      className={`pointer-events-auto absolute overflow-hidden rounded px-1 py-0.5 text-left text-[10px] font-medium ${
+                        hasConflict ? 'bg-amber-300 text-amber-950 hover:bg-amber-400' : 'bg-indigo-500 text-white hover:bg-indigo-600'
+                      }`}
+                      style={{
+                        left: `calc(${(dayIndex / 7) * 100}% + 2px)`,
+                        width: `calc(${(1 / 7) * 100}% - 4px)`,
+                        top: `${(startMinuteOfDay / 60) * HOUR_HEIGHT_REM}rem`,
+                        height: `${Math.max(1, ((endMinuteOfDay - startMinuteOfDay) / 60) * HOUR_HEIGHT_REM)}rem`,
+                      }}
+                    >
+                      <div className="truncate">
+                        {hasConflict && '⚠ '}
+                        {meeting.title}
+                      </div>
+                      <div className={`truncate ${hasConflict ? 'text-amber-900' : 'text-indigo-100'}`}>
+                        {String(Math.floor(startMinuteOfDay / 60)).padStart(2, '0')}:{String(startMinuteOfDay % 60).padStart(2, '0')}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
         </div>
       </div>
+      <p className="mt-1 text-[11px] text-slate-400">{t('weekViewHolidayLegend')}</p>
     </div>
   );
 }

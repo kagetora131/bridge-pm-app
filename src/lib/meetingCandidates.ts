@@ -1,5 +1,7 @@
 import type { Member, MeetingSlot } from '../types';
 import { computeMeetingWindow } from './meetingSuggest';
+import { isDayOff } from './memberStatus';
+import { addDaysISO } from './timezone';
 
 const SLOT_MINUTES = 15;
 const SLOT_MS = SLOT_MINUTES * 60 * 1000;
@@ -155,4 +157,38 @@ export function findMeetingCandidates(
   }
 
   return candidates;
+}
+
+export interface DayComparison {
+  dateISO: string;
+  best: MeetingCandidate;
+}
+
+/**
+ * The best ("optimal") candidate on each of the next `count` days that everyone
+ * works — or, if the group shares no working day at all, days anyone works — so
+ * the PM can see which day is fairest instead of only the best time on one day.
+ */
+export function compareUpcomingDays(
+  members: Member[],
+  fromISO: string,
+  durationMinutes: number,
+  count = 5,
+  maxLookaheadDays = 21,
+  nowMs: number = Date.now(),
+): DayComparison[] {
+  if (members.length === 0) return [];
+  const collect = (qualifies: (dateISO: string) => boolean) => {
+    const days: DayComparison[] = [];
+    for (let offset = 0; offset <= maxLookaheadDays && days.length < count; offset += 1) {
+      const dateISO = addDaysISO(fromISO, offset);
+      if (!qualifies(dateISO)) continue;
+      const best = findMeetingCandidates(members, dateISO, durationMinutes)[0];
+      // Skip a day whose best slot has already started (e.g. today's afternoon slot, viewed in the evening).
+      if (best && best.slot.startMs >= nowMs) days.push({ dateISO, best });
+    }
+    return days;
+  };
+  const days = collect((d) => members.every((m) => !isDayOff(m, d)));
+  return days.length > 0 ? days : collect((d) => members.some((m) => !isDayOff(m, d)));
 }

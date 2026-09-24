@@ -2,6 +2,13 @@ import type { Member } from '../types';
 import { currentDateISOInZone, currentTimeInZone, currentWeekdayInZone } from './timezone';
 import { DEFAULT_WORKING_DAYS } from './weekdays';
 import { isHoliday } from './holidays';
+import { weekdayOfISO } from './calendar';
+
+/** Whether `dateISO` (the member's local calendar date) is a weekly rest day or public holiday for them. */
+export function isDayOff(member: Member, dateISO: string): boolean {
+  const workingDays = member.workingDays ?? DEFAULT_WORKING_DAYS;
+  return !workingDays.includes(weekdayOfISO(dateISO)) || isHoliday(member.timezone, dateISO);
+}
 
 function hhmmToMinutes(hhmm: string): number {
   const [h, m] = hhmm.split(':').map(Number);

@@ -14,6 +14,7 @@ export interface WeekOccurrence {
   dayIndex: number; // 0-6 within the supplied weekDates, already in displayTz terms
   startMinuteOfDay: number;
   endMinuteOfDay: number; // clipped to 24:00 if the meeting would cross into the next day
+  startMs: number;
 }
 
 /**
@@ -57,7 +58,7 @@ export function computeWeekOccurrences(
         endMinuteOfDay = 24 * 60; // meeting crosses midnight in the display timezone — clip for MVP
       }
 
-      results.push({ meeting, dayIndex, startMinuteOfDay, endMinuteOfDay });
+      results.push({ meeting, dayIndex, startMinuteOfDay, endMinuteOfDay, startMs: startUtc });
     }
   }
 

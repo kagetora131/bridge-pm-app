@@ -177,6 +177,8 @@ export default function App() {
         {section === 'meeting' && (
           <MeetingPlanner
             members={members}
+            projects={projects}
+            assignments={assignments}
             recurringMeetings={recurringMeetings}
             setRecurringMeetings={setRecurringMeetings}
             meetingBurdenLog={meetingBurdenLog}

@@ -3,6 +3,8 @@ import { useI18n } from '../i18n/I18nContext';
 import { newId } from '../lib/storage';
 import { timezonesInUse } from '../lib/timezoneList';
 import { WEEKDAY_LABELS } from '../lib/weekdays';
+import { upcomingHolidayConflicts } from '../lib/recurringMeetings';
+import { todayISO } from '../lib/timezone';
 import { MeetingWeekView } from './MeetingWeekView';
 import type { Member, RecurringMeeting } from '../types';
 
@@ -22,12 +24,15 @@ export function RecurringMeetings({
   meetings,
   setMeetings,
   members,
+  defaultTimezone,
 }: {
   meetings: RecurringMeeting[];
   setMeetings: (updater: (prev: RecurringMeeting[]) => RecurringMeeting[]) => void;
   members: Member[];
+  defaultTimezone?: string;
 }) {
   const { t, lang } = useI18n();
+  const today = todayISO();
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState(emptyDraft);
@@ -182,7 +187,7 @@ export function RecurringMeetings({
 
       {meetings.length > 0 && (
         <div className="mb-6">
-          <MeetingWeekView meetings={meetings} members={members} />
+          <MeetingWeekView meetings={meetings} members={members} defaultTimezone={defaultTimezone} />
         </div>
       )}
 
@@ -204,6 +209,14 @@ export function RecurringMeetings({
                   </p>
                 )}
                 {meeting.notes && <p className="text-xs text-slate-400">{meeting.notes}</p>}
+                {upcomingHolidayConflicts(meeting, members, today)
+                  .slice(0, 2)
+                  .map(({ occurrence, conflicts }) => (
+                    <p key={occurrence.startMs} className="mt-1 text-xs text-amber-700">
+                      ⚠ {t('holidayConflictHeading')}: {occurrence.dateISO} ({weekdayLabels[meeting.weekday]}) —{' '}
+                      {conflicts.map((c) => `${memberName(c.memberId)} (${c.holidayName})`).join(', ')}
+                    </p>
+                  ))}
               </div>
               <div className="flex gap-2">
                 <button type="button" onClick={() => startEdit(meeting)} className="text-sm text-slate-500 hover:text-slate-900">

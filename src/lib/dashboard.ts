@@ -1,8 +1,7 @@
 import type { Assignment, Member, MeetingSlot, Project, RecurringMeeting, Task } from '../types';
 import { computeWorkloads, type MemberWorkload } from './workload';
 import { computeProjectBudget, type ProjectBudget } from './budget';
-import { addDaysISO, localTimeToUtcMs } from './timezone';
-import { occursOn } from './recurringMeetings';
+import { upcomingOccurrences, type MeetingOccurrence } from './recurringMeetings';
 import { computeMeetingWindow, findBestCompromise, nearestAllWorkingDayISO } from './meetingSuggest';
 import type { MeetingWindow } from './meetingSuggest';
 import { isBehindSchedule } from './calendarRisk';
@@ -63,32 +62,14 @@ export function overdueTasks(tasks: Task[], todayISO: string): Task[] {
   return tasks.filter((task) => task.status !== 'done' && task.dueDate && task.dueDate < todayISO);
 }
 
-export interface NextMeetingOccurrence {
-  meeting: RecurringMeeting;
-  dateISO: string;
-  startMs: number;
-}
-
 /** The soonest future occurrence across all recurring meetings, as of `nowMs`. */
 export function nextRecurringMeetingOccurrence(
   meetings: RecurringMeeting[],
   fromISO: string,
   nowMs: number = Date.now(),
   maxLookaheadDays = 21,
-): NextMeetingOccurrence | null {
-  let best: NextMeetingOccurrence | null = null;
-  for (let offset = -1; offset <= maxLookaheadDays; offset += 1) {
-    const candidateISO = addDaysISO(fromISO, offset);
-    for (const meeting of meetings) {
-      if (!occursOn(meeting, candidateISO)) continue;
-      const startMs = localTimeToUtcMs(candidateISO, meeting.time, meeting.timezone);
-      if (startMs < nowMs) continue;
-      if (!best || startMs < best.startMs) {
-        best = { meeting, dateISO: candidateISO, startMs };
-      }
-    }
-  }
-  return best;
+): MeetingOccurrence | null {
+  return upcomingOccurrences(meetings, fromISO, nowMs, maxLookaheadDays)[0] ?? null;
 }
 
 export interface RecommendedSlot {

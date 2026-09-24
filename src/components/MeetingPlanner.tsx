@@ -1,13 +1,21 @@
 import { useMemo, useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
 import { computeMeetingWindow, nearestAllWorkingDayISO } from '../lib/meetingSuggest';
-import { findMeetingCandidates, type MeetingCandidate, type MeetingCandidateKind } from '../lib/meetingCandidates';
+import {
+  compareUpcomingDays,
+  findMeetingCandidates,
+  type DayComparison,
+  type MeetingCandidate,
+  type MeetingCandidateKind,
+} from '../lib/meetingCandidates';
+import { WEEKDAY_LABELS } from '../lib/weekdays';
+import { weekdayOfISO } from '../lib/calendar';
 import { computeBurdenHistory } from '../lib/meetingHistory';
 import { browserTimezone, formatHourLabel, todayISO } from '../lib/timezone';
 import { timezonesInUse } from '../lib/timezoneList';
 import { newId } from '../lib/storage';
 import { RecurringMeetings } from './RecurringMeetings';
-import type { Member, MeetingDecisionLogEntry, MeetingSlot, RecurringMeeting } from '../types';
+import type { Assignment, Member, MeetingDecisionLogEntry, MeetingSlot, Project, RecurringMeeting } from '../types';
 
 const DURATION_OPTIONS = [30, 45, 60];
 
@@ -58,23 +66,30 @@ function Bar({
 
 export function MeetingPlanner({
   members,
+  projects,
+  assignments,
   recurringMeetings,
   setRecurringMeetings,
   meetingBurdenLog,
   setMeetingBurdenLog,
+  defaultTimezone,
 }: {
   members: Member[];
+  projects: Project[];
+  assignments: Assignment[];
   recurringMeetings: RecurringMeeting[];
   setRecurringMeetings: (updater: (prev: RecurringMeeting[]) => RecurringMeeting[]) => void;
   meetingBurdenLog: MeetingDecisionLogEntry[];
   setMeetingBurdenLog: (updater: (prev: MeetingDecisionLogEntry[]) => MeetingDecisionLogEntry[]) => void;
+  defaultTimezone?: string;
 }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
+  const today = todayISO();
   const [selectedIds, setSelectedIds] = useState<string[]>(() => members.slice(0, 3).map((m) => m.id));
   const [referenceDate, setReferenceDate] = useState(() =>
     nearestAllWorkingDayISO(members.slice(0, 3), todayISO()),
   );
-  const [displayTz, setDisplayTz] = useState(browserTimezone());
+  const [displayTz, setDisplayTz] = useState(() => defaultTimezone ?? browserTimezone());
   const [durationMinutes, setDurationMinutes] = useState(30);
   const [meetingTitle, setMeetingTitle] = useState('');
   const [manualKind, setManualKind] = useState<MeetingCandidateKind | null>(null);
@@ -96,6 +111,35 @@ export function MeetingPlanner({
     () => (selectedMembers.length > 0 ? findMeetingCandidates(selectedMembers, referenceDate, durationMinutes) : []),
     [selectedMembers, referenceDate, durationMinutes],
   );
+
+  const dayComparison = useMemo(
+    () => compareUpcomingDays(selectedMembers, today, durationMinutes),
+    [selectedMembers, today, durationMinutes],
+  );
+  const bestDayISO = dayComparison.reduce<DayComparison | null>(
+    (best, day) => (!best || day.best.fairnessScore > best.best.fairnessScore ? day : best),
+    null,
+  )?.dateISO;
+
+  // Quick-select groups: each project's assigned members, and each recurring meeting's attendees.
+  const quickGroups = [
+    ...projects.map((p) => ({
+      key: `p-${p.id}`,
+      label: t('quickSelectProject', { name: p.name }),
+      ids: [...new Set(assignments.filter((a) => a.projectId === p.id).map((a) => a.memberId))],
+    })),
+    ...recurringMeetings.map((rm) => ({
+      key: `m-${rm.id}`,
+      label: t('quickSelectMeeting', { name: rm.title }),
+      ids: rm.participantIds,
+    })),
+  ].filter((g) => g.ids.length > 0);
+
+  const selectGroup = (ids: string[]) => {
+    const valid = ids.filter((id) => members.some((m) => m.id === id));
+    setSelectedIds(valid);
+    setReferenceDate(nearestAllWorkingDayISO(members.filter((m) => valid.includes(m.id)), today));
+  };
 
   const selectedKind: MeetingCandidateKind =
     (manualKind && candidates.some((c) => c.kind === manualKind) ? manualKind : candidates[0]?.kind) ?? 'optimal';
@@ -162,12 +206,36 @@ export function MeetingPlanner({
 
   return (
     <section>
-      <RecurringMeetings meetings={recurringMeetings} setMeetings={setRecurringMeetings} members={members} />
+      <RecurringMeetings
+        meetings={recurringMeetings}
+        setMeetings={setRecurringMeetings}
+        members={members}
+        defaultTimezone={defaultTimezone}
+      />
 
       <div className="mt-10 border-t border-slate-200 pt-6">
         <h2 className="text-lg font-semibold text-slate-900">{t('meetingHeading')}</h2>
         <p className="mt-1 text-xs text-slate-400">{t('meetingIntroText')}</p>
         <p className="mt-1 text-sm text-slate-500">{t('meetingDesc')}</p>
+
+        {quickGroups.length > 0 && (
+          <div className="mt-4 flex flex-wrap items-center gap-1.5 text-xs">
+            <span className="mr-1 font-medium text-slate-600">{t('quickSelectLabel')}:</span>
+            {quickGroups.map((g) => (
+              <button
+                key={g.key}
+                type="button"
+                onClick={() => selectGroup(g.ids)}
+                className="rounded-full border border-slate-300 bg-white px-2.5 py-1 text-slate-600 hover:border-slate-500 hover:text-slate-900"
+              >
+                {g.label}
+              </button>
+            ))}
+            <button type="button" onClick={() => setSelectedIds([])} className="px-2 py-1 text-slate-400 hover:text-slate-700">
+              {t('clearSelection')}
+            </button>
+          </div>
+        )}
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
@@ -217,6 +285,39 @@ export function MeetingPlanner({
           <span className="mb-1 block font-medium">{t('meetingTitleOptional')}</span>
           <input className="input" value={meetingTitle} onChange={(e) => setMeetingTitle(e.target.value)} />
         </label>
+
+        {dayComparison.length > 0 && (
+          <div className="mt-5">
+            <p className="text-sm font-medium text-slate-600">{t('dayComparisonHeading')}</p>
+            <p className="mb-2 text-xs text-slate-400">{t('dayComparisonHint')}</p>
+            <div className="flex flex-wrap gap-2">
+              {dayComparison.map(({ dateISO, best }) => {
+                const isCurrent = dateISO === referenceDate;
+                const isBest = dateISO === bestDayISO;
+                return (
+                  <button
+                    key={dateISO}
+                    type="button"
+                    onClick={() => setReferenceDate(dateISO)}
+                    className={`rounded-lg border px-3 py-2 text-left text-xs ${
+                      isCurrent ? 'border-slate-900 bg-white shadow-sm' : 'border-slate-200 bg-slate-50 hover:border-slate-400'
+                    }`}
+                  >
+                    <span className="flex items-center gap-1.5 font-medium text-slate-800">
+                      {dateISO.slice(5)} ({WEEKDAY_LABELS[lang][weekdayOfISO(dateISO)]})
+                      {isBest && (
+                        <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] text-emerald-800">{t('recommendedDay')}</span>
+                      )}
+                    </span>
+                    <span className="mt-0.5 block text-slate-500">
+                      {rangeLabel(best.slot, displayTz)} · {t('fairnessScoreLabel')} {best.fairnessScore}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {selectedMembers.length === 0 ? (
           <p className="mt-6 text-sm text-slate-500">{t('selectAtLeastOne')}</p>
