@@ -114,7 +114,18 @@ export interface TodayFocusItem {
   refId: string;
 }
 
-/** Picks the ~3 most pressing items a bridge PM should look at today, highest-severity first. */
+/**
+ * Picks the ~3 most pressing items a bridge PM should look at today.
+ *
+ * "Overdue" and "over-budget" are shown with a red badge (the most severe), while
+ * "blocked" / "behind schedule" / "overloaded" get an amber badge. When there happen
+ * to be 3+ overdue tasks, taking the top 3 by raw priority would fill every slot with
+ * red items and bury any blocked/behind/overloaded items that also need attention —
+ * the panel reads as "everything is on fire" even when it's one project's problem.
+ * So: surface at most one red item, then fill the rest from the amber categories
+ * (round-robin, so one bad project's many blocked tasks don't crowd out others).
+ * Only fall back to a second red item if there aren't enough amber items to fill the panel.
+ */
 export function computeTodayFocus(input: {
   overdue: Task[];
   overBudget: OverBudgetProjectInfo[];
@@ -122,12 +133,37 @@ export function computeTodayFocus(input: {
   behind: Task[];
   overloaded: OverloadedMemberInfo[];
 }, limit = 3): TodayFocusItem[] {
-  const items: TodayFocusItem[] = [
-    ...input.overdue.map((task): TodayFocusItem => ({ kind: 'overdueTask', refId: task.id })),
-    ...input.overBudget.map((x): TodayFocusItem => ({ kind: 'overBudgetProject', refId: x.project.id })),
-    ...input.blocked.map((x): TodayFocusItem => ({ kind: 'blockedTask', refId: x.task.id })),
-    ...input.behind.map((task): TodayFocusItem => ({ kind: 'behindScheduleTask', refId: task.id })),
-    ...input.overloaded.map((x): TodayFocusItem => ({ kind: 'overloadedMember', refId: x.member.id })),
+  const redQueues: TodayFocusItem[][] = [
+    input.overdue.map((task): TodayFocusItem => ({ kind: 'overdueTask', refId: task.id })),
+    input.overBudget.map((x): TodayFocusItem => ({ kind: 'overBudgetProject', refId: x.project.id })),
   ];
-  return items.slice(0, limit);
+  const amberQueues: TodayFocusItem[][] = [
+    input.blocked.map((x): TodayFocusItem => ({ kind: 'blockedTask', refId: x.task.id })),
+    input.behind.map((task): TodayFocusItem => ({ kind: 'behindScheduleTask', refId: task.id })),
+    input.overloaded.map((x): TodayFocusItem => ({ kind: 'overloadedMember', refId: x.member.id })),
+  ];
+
+  function roundRobin(queues: TodayFocusItem[][], max: number): TodayFocusItem[] {
+    const remaining = queues.map((q) => [...q]);
+    const out: TodayFocusItem[] = [];
+    let tookAny = true;
+    while (out.length < max && tookAny) {
+      tookAny = false;
+      for (const q of remaining) {
+        if (out.length >= max) break;
+        const next = q.shift();
+        if (next) {
+          out.push(next);
+          tookAny = true;
+        }
+      }
+    }
+    return out;
+  }
+
+  const allRed = roundRobin(redQueues, limit);
+  const firstRed = allRed.slice(0, Math.min(1, limit));
+  const ambers = roundRobin(amberQueues, limit - firstRed.length);
+  const extraRed = allRed.slice(firstRed.length, limit - ambers.length);
+  return [...firstRed, ...ambers, ...extraRed];
 }

@@ -77,6 +77,7 @@ export function Dashboard({
           key={idx}
           badge={t('dashboardOverdueBadge')}
           badgeColor="bg-rose-100 text-rose-700"
+          project={projectName(task.projectId)}
           title={titleOf(task)}
           detail={`${t('dueDate')}: ${task.dueDate} (${days}${t('daysUnit')})`}
           onView={() => onOpenTask(task.id)}
@@ -107,6 +108,7 @@ export function Dashboard({
           key={idx}
           badge={t('statusBlocked')}
           badgeColor="bg-amber-100 text-amber-800"
+          project={projectName(task.projectId)}
           title={titleOf(task)}
           detail={`${t('dependsOn')}: ${dependency ? titleOf(dependency) : t('dashboardNoDependencyShort')}`}
           onView={() => onOpenTask(task.id)}
@@ -121,6 +123,7 @@ export function Dashboard({
           key={idx}
           badge={t('dashboardBehindBadge')}
           badgeColor="bg-amber-100 text-amber-800"
+          project={projectName(task.projectId)}
           title={titleOf(task)}
           detail={t('progressVsPlanned', { actual: task.actualProgress ?? 0, planned: plannedPaceOnDay(task, today) ?? '—' })}
           onView={() => onOpenTask(task.id)}
@@ -288,12 +291,14 @@ export function Dashboard({
 function FocusRow({
   badge,
   badgeColor,
+  project,
   title,
   detail,
   onView,
 }: {
   badge: string;
   badgeColor: string;
+  project?: string | null;
   title: string;
   detail: string;
   onView: () => void;
@@ -303,6 +308,7 @@ function FocusRow({
     <li className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-slate-800 px-3 py-2">
       <div className="min-w-0">
         <span className={`mr-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${badgeColor}`}>{badge}</span>
+        {project && <span className="mr-1 text-xs text-slate-400">{project} ·</span>}
         <span className="text-sm font-medium text-white">{title}</span>
         {detail && <span className="ml-2 text-xs text-slate-300">{detail}</span>}
       </div>

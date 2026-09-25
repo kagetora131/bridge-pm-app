@@ -209,7 +209,12 @@ export function CalendarView({
                 {dayTasks.slice(0, MAX_VISIBLE_PER_DAY).map(({ task, pct, reasons, dependency, isRestDay, holidayName }) => {
                   const risk = reasons.length > 0;
                   const color = colorForProject(task.projectId);
-                  const titleParts = [memberName(task.assigneeId) ?? t('unassigned'), t(STATUS_KEY[task.status])];
+                  const project = projects.find((p) => p.id === task.projectId);
+                  const titleParts = [
+                    project?.name ?? t('noProject'),
+                    memberName(task.assigneeId) ?? t('unassigned'),
+                    t(STATUS_KEY[task.status]),
+                  ];
                   for (const r of reasons) titleParts.push(`⚠ ${t(RISK_REASON_KEY[r])}`);
                   if (dependency) titleParts.push(`${t('dependsOn')}: ${taskTitle(dependency, lang)}`);
                   if (isRestDay) titleParts.push(holidayName ?? t('restDay'));
@@ -221,8 +226,11 @@ export function CalendarView({
                       onClick={() => onOpenTask(task.id)}
                       title={titleParts.join(' · ')}
                       className={`block w-full truncate rounded px-1 py-0.5 text-left text-[11px] font-medium hover:opacity-80 ${
+                        // リスクありでも背景は元のプロジェクト色のまま保ち、左に赤の縁取りだけ足す
+                        // (以前は背景を丸ごと赤にしていたため、どのプロジェクトの
+                        // タスクか分からなくなり、リスク項目が多い日は赤一色に見えていた)
                         risk
-                          ? 'border border-rose-500 bg-rose-50 text-rose-700'
+                          ? `border-l-4 border-rose-600 ${color.fill} text-slate-900`
                           : showAsRest
                             ? 'border border-dashed border-slate-200 bg-slate-50 text-slate-400'
                             : `${color.fill} text-slate-800`
