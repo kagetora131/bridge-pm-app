@@ -8,7 +8,7 @@ import type { Member } from '../types';
 
 export type Section = 'dashboard' | 'projects' | 'calendar' | 'members' | 'meeting' | 'glossary';
 
-const SECTIONS: Section[] = ['dashboard', 'projects', 'calendar', 'members', 'meeting', 'glossary'];
+export const SECTIONS: Section[] = ['dashboard', 'projects', 'calendar', 'members', 'meeting', 'glossary'];
 
 const NAV_KEY: Record<Section, 'navDashboard' | 'navProjects' | 'navCalendar' | 'navMembers' | 'navMeeting' | 'navGlossary'> = {
   dashboard: 'navDashboard',

@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
-import { Header, type Section } from './components/Header';
+import { Header, SECTIONS, type Section } from './components/Header';
 import { Dashboard } from './components/Dashboard';
 import { ProjectsView } from './components/ProjectsView';
 import { CalendarView } from './components/CalendarView';
@@ -25,6 +25,21 @@ import {
 } from './data/seed';
 import type { Assignment, GlossaryTerm, Member, MeetingDecisionLogEntry, Project, RecurringMeeting, Task } from './types';
 
+const SECTION_STORAGE_KEY = 'bridge-pm:section';
+
+// 再読み込み(サンプルデータのリセット・データの取り込み後を含む)しても、直前に見ていた
+// 画面が開くようにする。ブラウザのタブ単位で覚える(sessionStorage)ので、開き直すと最初の
+// ダッシュボードから始まる。
+function loadSection(): Section {
+  try {
+    const saved = window.sessionStorage.getItem(SECTION_STORAGE_KEY);
+    if (saved && (SECTIONS as string[]).includes(saved)) return saved as Section;
+  } catch {
+    // 読み出せなければダッシュボード
+  }
+  return 'dashboard';
+}
+
 // Runs before the usePersistentState hooks below read localStorage, so a
 // sample-data version bump takes effect on this very render rather than
 // requiring a manual clear. Idempotent, so StrictMode's double-invoke is safe.
@@ -32,7 +47,15 @@ ensureLatestSeed();
 
 export default function App() {
   const { t, lang } = useI18n();
-  const [section, setSection] = useState<Section>('dashboard');
+  const [section, setSectionState] = useState<Section>(loadSection);
+  const setSection = useCallback((next: Section) => {
+    setSectionState(next);
+    try {
+      window.sessionStorage.setItem(SECTION_STORAGE_KEY, next);
+    } catch {
+      // 保存できなくても画面の切り替えは続ける
+    }
+  }, []);
   const [projects, setProjects] = usePersistentState<Project[]>('projects', seedProjects);
   const [assignments, setAssignments] = usePersistentState<Assignment[]>('assignments', seedAssignments);
   const [tasks, setTasks] = usePersistentState<Task[]>('tasks', seedTasks);
