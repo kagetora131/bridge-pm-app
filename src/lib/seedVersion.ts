@@ -1,15 +1,24 @@
+import { todayISO } from './timezone';
+
 /**
- * The app is a fast-iterating demo, so we bump this whenever seed.ts changes
- * in a way that's worth surfacing immediately (new sample data, restructured
- * fields). Without this, a returning browser would keep showing whatever was
- * saved to localStorage on its very first visit — every later seed.ts update
- * would be invisible, because usePersistentState only falls back to the seed
- * default when the key is completely missing. Bumping the version here makes
- * a stale browser pick up the new sample data automatically, at the cost of
- * discarding anything the user had edited in — acceptable for sample data,
- * not something to do once this holds real user data.
+ * The app is a fast-iterating demo, so we bump the base part of this whenever
+ * seed.ts changes in a way that's worth surfacing immediately (new sample
+ * data, restructured fields). Without this, a returning browser would keep
+ * showing whatever was saved to localStorage on its very first visit — every
+ * later seed.ts update would be invisible, because usePersistentState only
+ * falls back to the seed default when the key is completely missing. Bumping
+ * the version here makes a stale browser pick up the new sample data
+ * automatically, at the cost of discarding anything the user had edited in —
+ * acceptable for sample data, not something to do once this holds real user
+ * data.
+ *
+ * The `:yyyy-MM` suffix additionally rolls the version over automatically
+ * once a month, so the task dates in seed.ts (which are generated relative to
+ * "today" — see seedDateShift.ts) get re-anchored to the current month
+ * without anyone needing to remember to refresh the dummy data by hand.
  */
-export const CURRENT_SEED_VERSION = '2026-09-24-progress-and-english-titles';
+const SEED_BASE_VERSION = '2026-09-24-progress-and-english-titles';
+export const CURRENT_SEED_VERSION = `${SEED_BASE_VERSION}:${todayISO().slice(0, 7)}`;
 
 const VERSION_KEY = 'bridge-pm:seedVersion';
 export const DATA_KEYS = ['projects', 'assignments', 'tasks', 'members', 'glossary', 'recurringMeetings', 'meetingBurdenLog'];
