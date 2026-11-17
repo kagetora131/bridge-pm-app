@@ -160,7 +160,7 @@ export default function App() {
   const openTask = tasks.find((task) => task.id === openTaskId) ?? null;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 pb-[calc(3.5rem+env(safe-area-inset-bottom))] sm:pb-0">
       <Header
         section={section}
         onSectionChange={setSection}
@@ -200,6 +200,7 @@ export default function App() {
             members={members}
             tasks={tasks}
             onDeleteProject={handleDeleteProject}
+            onUndoable={offerUndo}
           />
         )}
         {section === 'calendar' && (
@@ -237,9 +238,10 @@ export default function App() {
             setRecurringMeetings={setRecurringMeetings}
             meetingBurdenLog={meetingBurdenLog}
             setMeetingBurdenLog={setMeetingBurdenLog}
+            onUndoable={offerUndo}
           />
         )}
-        {section === 'glossary' && <Glossary terms={glossary} setTerms={setGlossary} />}
+        {section === 'glossary' && <Glossary terms={glossary} setTerms={setGlossary} onUndoable={offerUndo} />}
       </main>
       <footer className="mx-auto max-w-5xl px-4 pb-8 text-xs text-slate-400">{t('footerNote')}</footer>
 

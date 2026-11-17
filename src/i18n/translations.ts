@@ -270,6 +270,30 @@ export const dictionaries = {
     searchGlossary: '用語を検索',
     noTerms: '登録された用語はまだありません。',
 
+    // スマホの下タブ用の短い名前(2026-11-17)
+    mobileNavLabel: 'メインメニュー',
+    navShortDashboard: 'ホーム',
+    navShortProjects: '案件',
+    navShortCalendar: '予定',
+    navShortMembers: 'メンバー',
+    navShortMeeting: '会議',
+    navShortGlossary: '用語',
+    navShortMyPage: '自分',
+    // スマホのカレンダー(日を押すとその日のタスク一覧)
+    calendarSelectedDay: '{date} のタスク',
+    calendarNoTasksOnDay: 'この日のタスクはありません。',
+    calendarLegendToggle: '凡例と注記',
+    calendarDayAria: '{date}: {n}件',
+    // スマホの会議(日ごとの一覧)
+    weekNoMeetings: '予定なし',
+    // メンバー(スマホでは担当タスクなどを畳む)
+    memberShowDetails: '担当タスク・詳細を見る({n})',
+    memberHideDetails: '担当タスク・詳細を閉じる',
+    // アサイン・定例会議・用語を削除したときの「元に戻す」
+    undoAssignmentRemoved: 'アサインを削除しました: {name}',
+    undoMeetingDeleted: '定例会議を削除しました: {name}',
+    undoTermDeleted: '用語を削除しました: {name}',
+
     footerNote: '※ローカルストレージにのみ保存されます(サーバー送信なし)。',
   },
   en: {
@@ -540,6 +564,30 @@ export const dictionaries = {
     note: 'Note',
     searchGlossary: 'Search terms',
     noTerms: 'No terms yet.',
+
+    // Short labels for the phone bottom tab bar (2026-11-17)
+    mobileNavLabel: 'Main menu',
+    navShortDashboard: 'Home',
+    navShortProjects: 'Projects',
+    navShortCalendar: 'Calendar',
+    navShortMembers: 'Members',
+    navShortMeeting: 'Meetings',
+    navShortGlossary: 'Terms',
+    navShortMyPage: 'My Page',
+    // Phone calendar (tap a day to list its tasks)
+    calendarSelectedDay: 'Tasks on {date}',
+    calendarNoTasksOnDay: 'No tasks on this day.',
+    calendarLegendToggle: 'Legend & notes',
+    calendarDayAria: '{date}: {n} tasks',
+    // Phone meetings (day-by-day list)
+    weekNoMeetings: 'No meetings',
+    // Members (task list and details are collapsed on phones)
+    memberShowDetails: 'Show tasks & details ({n})',
+    memberHideDetails: 'Hide tasks & details',
+    // "Undo" after removing an assignment, recurring meeting or glossary term
+    undoAssignmentRemoved: 'Assignment removed: {name}',
+    undoMeetingDeleted: 'Recurring meeting deleted: {name}',
+    undoTermDeleted: 'Term deleted: {name}',
 
     footerNote: 'Stored in your browser only (localStorage) — nothing is sent to a server.',
   },

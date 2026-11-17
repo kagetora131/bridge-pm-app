@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
+import type { TranslationKey } from '../i18n/translations';
 import { resetToSampleData } from '../lib/seedVersion';
 import { downloadDataExport, importDataFromJSON } from '../lib/dataPortability';
+import { loadJSON, saveJSON } from '../lib/storage';
 import { browserTimezone, currentDateLabelInZone } from '../lib/timezone';
 import { GuidedTour } from './GuidedTour';
 import type { Member } from '../types';
@@ -19,6 +21,73 @@ const NAV_KEY: Record<Section, 'navDashboard' | 'navProjects' | 'navCalendar' | 
   glossary: 'navGlossary',
 };
 
+// スマホの下タブ用の短い名前(6項目が折り返さず1列に収まる長さ)
+const SHORT_NAV_KEY: Record<Section, TranslationKey> = {
+  dashboard: 'navShortDashboard',
+  projects: 'navShortProjects',
+  calendar: 'navShortCalendar',
+  members: 'navShortMembers',
+  meeting: 'navShortMeeting',
+  glossary: 'navShortGlossary',
+};
+
+// 使い方ガイドを自動で出したかどうか。初めて開いた人にだけ1回出す(localStorage:bridge-pm:guideSeen)。
+const GUIDE_SEEN_KEY = 'guideSeen';
+
+function NavIcon({ section }: { section: Section }) {
+  const common = {
+    width: 22,
+    height: 22,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.8,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+    'aria-hidden': true,
+  };
+  switch (section) {
+    case 'dashboard':
+      return (
+        <svg {...common}>
+          <path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10" />
+        </svg>
+      );
+    case 'projects':
+      return (
+        <svg {...common}>
+          <path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" />
+        </svg>
+      );
+    case 'calendar':
+      return (
+        <svg {...common}>
+          <path d="M7 3v4M17 3v4M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z" />
+        </svg>
+      );
+    case 'members':
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="8" r="3.5" />
+          <path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6" />
+        </svg>
+      );
+    case 'meeting':
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
+        </svg>
+      );
+    case 'glossary':
+      return (
+        <svg {...common}>
+          <path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3V4zM5 17a3 3 0 0 1 3-3h11" />
+        </svg>
+      );
+  }
+}
+
 export function Header({
   section,
   onSectionChange,
@@ -34,8 +103,13 @@ export function Header({
 }) {
   const { t, lang, setLang } = useI18n();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [showGuide, setShowGuide] = useState(false);
+  const [showGuide, setShowGuide] = useState(() => !loadJSON<boolean>(GUIDE_SEEN_KEY, false));
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const closeGuide = () => {
+    setShowGuide(false);
+    saveJSON(GUIDE_SEEN_KEY, true);
+  };
 
   // カレンダー機能を持つアプリなので、開くたびに「今の実際の日付」を
   // 常に確認できるよう、ヘッダーに本日の日付を表示する(デモ用の固定日付では
@@ -73,25 +147,36 @@ export function Header({
 
   return (
     <header className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative mx-auto flex max-w-5xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3 sm:py-4">
         <div>
-          <div className="flex items-center gap-2">
+          {/* スマホでは、右上に置く「言語・⋯」と重ならないよう右に余白を空ける */}
+          <div className="flex min-h-11 items-center gap-2 pr-32 sm:min-h-0 sm:pr-0">
             <h1 className="text-xl font-bold text-slate-900">{t('appTitle')}</h1>
             <span
-              className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800"
+              className="hidden rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-medium text-amber-800 sm:inline"
               title={t('demoModeNote')}
             >
               {t('demoModeBadge')}
             </span>
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600">
+            <span className="hidden rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 sm:inline">
               {t('today')}: {todayLabel}
             </span>
           </div>
-          <p className="text-sm text-slate-500">{t('appSubtitle')}</p>
+          <p className="hidden text-sm text-slate-500 sm:block">{t('appSubtitle')}</p>
+          {/* スマホ用: サブタイトル・デモモード・今日の日付を、小さく1か所にまとめる */}
+          <p className="flex flex-wrap items-center gap-x-1.5 text-xs text-slate-500 sm:hidden">
+            <span>{t('appSubtitle')}</span>
+            <span aria-hidden="true">·</span>
+            <span title={t('demoModeNote')}>{t('demoModeBadge')}</span>
+            <span aria-hidden="true">·</span>
+            <span>
+              {t('today')}: {todayLabel}
+            </span>
+          </p>
           <label className="mt-2 flex items-center gap-2 text-xs text-slate-500">
-            <span className="font-medium">{t('viewerLabel')}:</span>
+            <span className="shrink-0 font-medium">{t('viewerLabel')}:</span>
             <select
-              className={`rounded-md border px-2 py-1 text-xs ${
+              className={`min-w-0 flex-1 rounded-md border px-2 py-1 text-xs sm:flex-none ${
                 viewerId ? 'border-slate-900 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-700'
               }`}
               value={viewerId ?? ''}
@@ -106,8 +191,9 @@ export function Header({
             </select>
           </label>
         </div>
-        <div className="flex items-center gap-2 sm:gap-4">
-          <nav className="flex flex-wrap gap-1 rounded-lg bg-slate-100 p-1">
+        {/* スマホでは右上(題名と同じ行)に置く。PCは今までどおり右側 */}
+        <div className="absolute right-4 top-3 flex items-center gap-2 sm:static sm:gap-4">
+          <nav className="hidden flex-wrap gap-1 rounded-lg bg-slate-100 p-1 sm:flex">
             {SECTIONS.map((s) => (
               <button
                 key={s}
@@ -169,7 +255,37 @@ export function Header({
           <input ref={fileInputRef} type="file" accept="application/json" className="hidden" onChange={handleImportFile} />
         </div>
       </div>
-      {showGuide && <GuidedTour onClose={() => setShowGuide(false)} />}
+
+      {/* スマホ用: 画面の下に固定するタブ(6項目を1列。アイコン+短い名前) */}
+      <nav
+        aria-label={t('mobileNavLabel')}
+        className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] sm:hidden"
+      >
+        <ul className="grid grid-cols-6">
+          {SECTIONS.map((s) => {
+            const active = section === s;
+            return (
+              <li key={s}>
+                <button
+                  type="button"
+                  onClick={() => onSectionChange(s)}
+                  aria-current={active ? 'page' : undefined}
+                  className={`flex h-14 w-full min-w-0 flex-col items-center justify-center gap-0.5 border-t-2 px-0.5 text-xs font-medium ${
+                    active ? 'border-slate-900 text-slate-900' : 'border-transparent text-slate-500'
+                  }`}
+                >
+                  <NavIcon section={s} />
+                  <span className="max-w-full truncate">
+                    {s === 'dashboard' && viewerId ? t('navShortMyPage') : t(SHORT_NAV_KEY[s])}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      {showGuide && <GuidedTour onClose={closeGuide} />}
     </header>
   );
 }

@@ -5,6 +5,7 @@ import { timezonesInUse } from '../lib/timezoneList';
 import { WEEKDAY_LABELS } from '../lib/weekdays';
 import { upcomingHolidayConflicts } from '../lib/recurringMeetings';
 import { todayISO } from '../lib/timezone';
+import { insertAt, type OfferUndo } from '../lib/listUtils';
 import { MeetingWeekView } from './MeetingWeekView';
 import type { Member, RecurringMeeting } from '../types';
 
@@ -25,11 +26,13 @@ export function RecurringMeetings({
   setMeetings,
   members,
   defaultTimezone,
+  onUndoable,
 }: {
   meetings: RecurringMeeting[];
   setMeetings: (updater: (prev: RecurringMeeting[]) => RecurringMeeting[]) => void;
   members: Member[];
   defaultTimezone?: string;
+  onUndoable?: OfferUndo;
 }) {
   const { t, lang } = useI18n();
   const today = todayISO();
@@ -94,7 +97,13 @@ export function RecurringMeetings({
     setEditingId(null);
   };
 
-  const remove = (id: string) => setMeetings((prev) => prev.filter((m) => m.id !== id));
+  const remove = (id: string) => {
+    const index = meetings.findIndex((m) => m.id === id);
+    const target = meetings[index];
+    if (!target) return;
+    setMeetings((prev) => prev.filter((m) => m.id !== id));
+    onUndoable?.(t('undoMeetingDeleted', { name: target.title }), () => setMeetings((prev) => insertAt(prev, index, target)));
+  };
 
   return (
     <section>

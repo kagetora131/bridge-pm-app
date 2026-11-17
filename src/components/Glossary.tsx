@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useI18n } from '../i18n/I18nContext';
 import { newId } from '../lib/storage';
+import { insertAt, type OfferUndo } from '../lib/listUtils';
 import type { GlossaryTerm } from '../types';
 
 const emptyDraft = { termJa: '', termEn: '', note: '' };
@@ -8,9 +9,11 @@ const emptyDraft = { termJa: '', termEn: '', note: '' };
 export function Glossary({
   terms,
   setTerms,
+  onUndoable,
 }: {
   terms: GlossaryTerm[];
   setTerms: (updater: (prev: GlossaryTerm[]) => GlossaryTerm[]) => void;
+  onUndoable?: OfferUndo;
 }) {
   const { t } = useI18n();
   const [query, setQuery] = useState('');
@@ -36,7 +39,15 @@ export function Glossary({
     setShowForm(false);
   };
 
-  const remove = (id: string) => setTerms((prev) => prev.filter((term) => term.id !== id));
+  const remove = (id: string) => {
+    const index = terms.findIndex((term) => term.id === id);
+    const target = terms[index];
+    if (!target) return;
+    setTerms((prev) => prev.filter((term) => term.id !== id));
+    onUndoable?.(t('undoTermDeleted', { name: target.termJa || target.termEn }), () =>
+      setTerms((prev) => insertAt(prev, index, target)),
+    );
+  };
 
   return (
     <section>

@@ -96,10 +96,10 @@ export function TaskDrawer({
             {secondary && <p className="text-xs text-slate-400">{secondary}</p>}
             <div className="mt-2 flex flex-wrap gap-1">
               {reasons.length === 0 ? (
-                <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] text-emerald-700">{t('noRisks')}</span>
+                <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs sm:text-[11px] text-emerald-700">{t('noRisks')}</span>
               ) : (
                 reasons.map((r) => (
-                  <span key={r} className="rounded-full bg-rose-100 px-2 py-0.5 text-[11px] font-medium text-rose-700">
+                  <span key={r} className="rounded-full bg-rose-100 px-2 py-0.5 text-xs sm:text-[11px] font-medium text-rose-700">
                     ⚠ {t(RISK_REASON_KEY[r])}
                   </span>
                 ))
@@ -173,7 +173,7 @@ export function TaskDrawer({
               <ProgressBar label={t('actualProgressLabel')} value={task.actualProgress} color="bg-slate-900" emptyLabel={t('progressNotRecorded')} />
               <ProgressBar label={t('plannedPaceTodayLabel')} value={planned} color="bg-slate-300" emptyLabel="—" />
             </div>
-            <p className="mt-2 text-[11px] text-slate-400">{t('progressAutoStatusNote')}</p>
+            <p className="mt-2 text-xs sm:text-[11px] text-slate-400">{t('progressAutoStatusNote')}</p>
           </section>
 
           <section>
@@ -263,7 +263,7 @@ export function TaskDrawer({
         </div>
 
         <div className="flex items-center justify-between border-t border-slate-200 p-4">
-          <p className="text-[11px] text-slate-400">{t('autoSaveNote')}</p>
+          <p className="text-xs sm:text-[11px] text-slate-400">{t('autoSaveNote')}</p>
           <button type="button" onClick={() => onDelete(task.id)} className="text-sm text-rose-500 hover:text-rose-700">
             {t('delete')}
           </button>

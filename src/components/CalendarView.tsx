@@ -13,6 +13,14 @@ import { taskTitle } from '../lib/taskText';
 import type { Member, Project, Task } from '../types';
 
 const MAX_VISIBLE_PER_DAY = 4;
+// スマホのマスに出す色の点の数(これを超えたら「+n」)
+const MAX_DOTS_PER_DAY = 3;
+
+// 表示している月の「最初に選ぶ日」: 今日がその月なら今日、そうでなければ1日。
+function defaultSelectedDay(year: number, month: number, todayIso: string): string {
+  const prefix = `${year}-${String(month + 1).padStart(2, '0')}`;
+  return todayIso.startsWith(prefix) ? todayIso : `${prefix}-01`;
+}
 
 export function CalendarView({
   tasks,
@@ -34,6 +42,8 @@ export function CalendarView({
   const [month, setMonth] = useState(today.getMonth());
   const [projectFilter, setProjectFilter] = useState<string>('all');
   const [memberFilter, setMemberFilter] = useState<string>(defaultMemberId ?? 'all');
+  // スマホ用: 日を押すと、その日のタスクの一覧を表の下に出す
+  const [selectedIso, setSelectedIso] = useState<string>(() => defaultSelectedDay(today.getFullYear(), today.getMonth(), todayIso));
 
   const weeks = useMemo(() => chunk(buildMonthGrid(year, month), 7), [year, month]);
 
@@ -50,16 +60,18 @@ export function CalendarView({
     [tasks, members, weeks],
   );
 
-  const shiftMonth = (delta: number) => {
-    const next = new Date(year, month + delta, 1);
-    setYear(next.getFullYear());
-    setMonth(next.getMonth());
+  const goToMonth = (y: number, m: number) => {
+    setYear(y);
+    setMonth(m);
+    setSelectedIso(defaultSelectedDay(y, m, todayIso));
   };
 
-  const goToday = () => {
-    setYear(today.getFullYear());
-    setMonth(today.getMonth());
+  const shiftMonth = (delta: number) => {
+    const next = new Date(year, month + delta, 1);
+    goToMonth(next.getFullYear(), next.getMonth());
   };
+
+  const goToday = () => goToMonth(today.getFullYear(), today.getMonth());
 
   const monthLabel = new Date(year, month, 1).toLocaleDateString(lang === 'ja' ? 'ja-JP' : 'en-US', {
     year: 'numeric',
@@ -84,9 +96,42 @@ export function CalendarView({
 
   const jumpToMonth = (value: string) => {
     const [y, m] = value.split('-').map(Number);
-    setYear(y);
-    setMonth(m);
+    goToMonth(y, m);
   };
+
+  // その日に進行中のタスクと、表示に使う情報(PCの表・スマホのマス・スマホの一覧で共通)
+  const itemsOn = (iso: string) =>
+    visibleTasks
+      .filter((task) => isTaskActiveOnDay(task, iso))
+      .map((task) => {
+        const assignee = members.find((m) => m.id === task.assigneeId);
+        const workingDays = assignee?.workingDays ?? DEFAULT_WORKING_DAYS;
+        const holiday = assignee ? holidayOn(assignee.timezone, iso) : null;
+        return {
+          task,
+          pct: taskProgressOnDay(task, iso),
+          reasons: riskReasons(task, tasks, todayIso),
+          dependency: unresolvedDependency(task, tasks),
+          isRestDay: !workingDays.includes(weekdayOfISO(iso)) || holiday !== null,
+          holidayName: holiday?.name ?? null,
+        };
+      });
+
+  const legend = (
+    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 sm:text-[11px]">
+      {projects.map((p) => (
+        <span key={p.id} className="flex items-center gap-1">
+          <span className={`h-2 w-2 rounded-full ${colorForProject(p.id).swatch}`} />
+          {p.name}
+        </span>
+      ))}
+      <span className="flex items-center gap-1 text-rose-600">{t('calendarRiskLegend')}</span>
+      <span className="flex items-center gap-1 text-slate-400">{t('calendarRestDayLegend')}</span>
+    </div>
+  );
+
+  const selectedItems = itemsOn(selectedIso);
+  const selectedLabel = `${selectedIso} (${weekdayLabels[weekdayOfISO(selectedIso)]})`;
 
   return (
     <section>
@@ -95,8 +140,9 @@ export function CalendarView({
           <h2 className="text-lg font-semibold text-slate-900">{t('calendarHeading')}</h2>
           <p className="mt-1 text-xs text-slate-400">{t('calendarIntro')}</p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <select className="input w-auto" value={memberFilter} onChange={(e) => setMemberFilter(e.target.value)}>
+        {/* スマホでは「メンバー・プロジェクト」を1行、「前月・今日・翌月・月の選択」を1行の計2行に収める */}
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
+          <select className="input min-w-0 sm:w-auto" value={memberFilter} onChange={(e) => setMemberFilter(e.target.value)}>
             <option value="all">{t('allMembers')}</option>
             {members.map((m) => (
               <option key={m.id} value={m.id}>
@@ -104,7 +150,7 @@ export function CalendarView({
               </option>
             ))}
           </select>
-          <select className="input w-auto" value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)}>
+          <select className="input min-w-0 sm:w-auto" value={projectFilter} onChange={(e) => setProjectFilter(e.target.value)}>
             <option value="all">{t('allProjects')}</option>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>
@@ -112,80 +158,162 @@ export function CalendarView({
               </option>
             ))}
           </select>
-          <button
-            type="button"
-            onClick={() => shiftMonth(-1)}
-            className="rounded-md border border-slate-300 px-2 py-1 text-sm text-slate-600 hover:bg-slate-100"
-            aria-label="prev month"
-          >
-            ‹
-          </button>
-          <button
-            type="button"
-            onClick={goToday}
-            className="rounded-md border border-slate-300 px-3 py-1 text-sm text-slate-600 hover:bg-slate-100"
-          >
-            {t('today')}
-          </button>
-          <button
-            type="button"
-            onClick={() => shiftMonth(1)}
-            className="rounded-md border border-slate-300 px-2 py-1 text-sm text-slate-600 hover:bg-slate-100"
-            aria-label="next month"
-          >
-            ›
-          </button>
-          <select
-            className="input w-auto"
-            value={`${year}-${month}`}
-            onChange={(e) => jumpToMonth(e.target.value)}
-            aria-label={t('jumpToMonth')}
-          >
-            {jumpOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          <div className="col-span-2 flex items-center gap-2 sm:contents">
+            <button
+              type="button"
+              onClick={() => shiftMonth(-1)}
+              className="rounded-md border border-slate-300 px-2 py-1 text-sm text-slate-600 hover:bg-slate-100"
+              aria-label="prev month"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              onClick={goToday}
+              className="rounded-md border border-slate-300 px-3 py-1 text-sm text-slate-600 hover:bg-slate-100"
+            >
+              {t('today')}
+            </button>
+            <button
+              type="button"
+              onClick={() => shiftMonth(1)}
+              className="rounded-md border border-slate-300 px-2 py-1 text-sm text-slate-600 hover:bg-slate-100"
+              aria-label="next month"
+            >
+              ›
+            </button>
+            <select
+              className="input min-w-0 flex-1 sm:w-auto sm:flex-none"
+              value={`${year}-${month}`}
+              onChange={(e) => jumpToMonth(e.target.value)}
+              aria-label={t('jumpToMonth')}
+            >
+              {jumpOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-medium text-slate-700">{monthLabel}</p>
-        <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
-          {projects.map((p) => (
-            <span key={p.id} className="flex items-center gap-1">
-              <span className={`h-2 w-2 rounded-full ${colorForProject(p.id).swatch}`} />
-              {p.name}
-            </span>
+        <div className="hidden sm:block">{legend}</div>
+      </div>
+
+      {/* スマホ用: 凡例と注記は畳んでおく(最初は閉じる) */}
+      <details className="mb-3 rounded-lg border border-slate-200 bg-white px-3 sm:hidden">
+        <summary className="flex cursor-pointer items-center text-sm text-slate-600">{t('calendarLegendToggle')}</summary>
+        <div className="space-y-2 pb-3">
+          {legend}
+          <p className="text-xs text-slate-500">{t('progressDisclaimer')}</p>
+        </div>
+      </details>
+
+      {/* スマホ用: マスは日付と色の点だけ。日を押すと、下にその日のタスクの一覧を出す */}
+      <div className="sm:hidden">
+        <div className="grid grid-cols-7 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200 text-xs">
+          {weekdayLabels.map((w) => (
+            <div key={w} className="bg-slate-50 px-1 py-1 text-center font-medium text-slate-500">
+              {w}
+            </div>
           ))}
-          <span className="flex items-center gap-1 text-rose-600">{t('calendarRiskLegend')}</span>
-          <span className="flex items-center gap-1 text-slate-400">{t('calendarRestDayLegend')}</span>
+          {weeks.flat().map((cell) => {
+            const items = itemsOn(cell.iso);
+            const hasRisk = items.some((item) => item.reasons.length > 0);
+            const selected = cell.iso === selectedIso;
+            return (
+              <button
+                key={cell.iso}
+                type="button"
+                data-compact
+                onClick={() => setSelectedIso(cell.iso)}
+                aria-pressed={selected}
+                aria-label={t('calendarDayAria', { date: cell.iso, n: items.length })}
+                className={`relative flex h-14 flex-col items-center justify-start gap-1 p-1 ${
+                  cell.inCurrentMonth ? 'bg-white text-slate-700' : 'bg-slate-50 text-slate-300'
+                } ${selected ? 'ring-2 ring-inset ring-slate-900' : ''}`}
+              >
+                <span className={cell.isToday ? 'inline-block rounded-full bg-slate-900 px-1.5 text-white' : ''}>{cell.day}</span>
+                <span className="flex items-center justify-center gap-0.5">
+                  {items.slice(0, MAX_DOTS_PER_DAY).map(({ task, isRestDay, reasons }) => (
+                    <span
+                      key={task.id}
+                      className={`h-2 w-2 rounded-full ${colorForProject(task.projectId).swatch} ${
+                        isRestDay && reasons.length === 0 ? 'opacity-30' : ''
+                      }`}
+                    />
+                  ))}
+                  {items.length > MAX_DOTS_PER_DAY && (
+                    <span className="text-xs leading-none text-slate-500">+{items.length - MAX_DOTS_PER_DAY}</span>
+                  )}
+                </span>
+                {hasRisk && (
+                  <span aria-hidden="true" className="absolute right-0.5 top-0.5 text-xs leading-none text-rose-600">
+                    ⚠
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3">
+          <h3 className="text-sm font-semibold text-slate-900">{t('calendarSelectedDay', { date: selectedLabel })}</h3>
+          {selectedItems.length === 0 ? (
+            <p className="mt-2 text-sm text-slate-500">{t('calendarNoTasksOnDay')}</p>
+          ) : (
+            <ul className="mt-1 divide-y divide-slate-100">
+              {selectedItems.map(({ task, pct, reasons, dependency, isRestDay, holidayName }) => {
+                const risk = reasons.length > 0;
+                const project = projects.find((p) => p.id === task.projectId);
+                return (
+                  <li key={task.id}>
+                    <button
+                      type="button"
+                      onClick={() => onOpenTask(task.id)}
+                      className="flex w-full items-start gap-2 py-2.5 text-left"
+                    >
+                      <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${colorForProject(task.projectId).swatch}`} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-medium text-slate-900">
+                          {risk && <span className="text-rose-600">⚠ </span>}
+                          {taskTitle(task, lang)}
+                          {pct !== null && <span className="ml-1 font-normal text-slate-500">({pct}%)</span>}
+                        </span>
+                        <span className="block text-xs text-slate-500">
+                          {project?.name ?? t('noProject')} · {memberName(task.assigneeId) ?? t('unassigned')} · {t(STATUS_KEY[task.status])}
+                        </span>
+                        {risk && (
+                          <span className="block text-xs text-rose-600">{reasons.map((r) => t(RISK_REASON_KEY[r])).join(' / ')}</span>
+                        )}
+                        {dependency && (
+                          <span className="block text-xs text-slate-500">
+                            {t('dependsOn')}: {taskTitle(dependency, lang)}
+                          </span>
+                        )}
+                        {isRestDay && <span className="block text-xs text-slate-400">{holidayName ?? t('restDay')}</span>}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200 text-xs">
+      {/* PC用: 今までどおりの月の表 */}
+      <div className="hidden grid-cols-7 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200 text-xs sm:grid">
         {weekdayLabels.map((w) => (
           <div key={w} className="bg-slate-50 px-2 py-1 text-center font-medium text-slate-500">
             {w}
           </div>
         ))}
         {weeks.flat().map((cell) => {
-          const dayTasks = visibleTasks
-            .filter((task) => isTaskActiveOnDay(task, cell.iso))
-            .map((task) => {
-              const assignee = members.find((m) => m.id === task.assigneeId);
-              const workingDays = assignee?.workingDays ?? DEFAULT_WORKING_DAYS;
-              const holiday = assignee ? holidayOn(assignee.timezone, cell.iso) : null;
-              return {
-                task,
-                pct: taskProgressOnDay(task, cell.iso),
-                reasons: riskReasons(task, tasks, todayIso),
-                dependency: unresolvedDependency(task, tasks),
-                isRestDay: !workingDays.includes(weekdayOfISO(cell.iso)) || holiday !== null,
-                holidayName: holiday?.name ?? null,
-              };
-            });
+          const dayTasks = itemsOn(cell.iso);
 
           return (
             <div
@@ -254,7 +382,7 @@ export function CalendarView({
           );
         })}
       </div>
-      <p className="mt-2 text-[11px] text-slate-400">{t('progressDisclaimer')}</p>
+      <p className="mt-2 hidden text-[11px] text-slate-400 sm:block">{t('progressDisclaimer')}</p>
 
       <div className="mt-6 rounded-lg border border-slate-200 bg-white p-4">
         <h3 className="text-sm font-semibold text-slate-900">{t('scheduleConflictHeading')}</h3>
@@ -285,4 +413,3 @@ export function CalendarView({
     </section>
   );
 }
-

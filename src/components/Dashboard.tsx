@@ -307,7 +307,7 @@ function FocusRow({
   return (
     <li className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-slate-800 px-3 py-2">
       <div className="min-w-0">
-        <span className={`mr-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${badgeColor}`}>{badge}</span>
+        <span className={`mr-2 inline-block rounded-full px-2 py-0.5 text-xs sm:text-[10px] font-medium ${badgeColor}`}>{badge}</span>
         {project && <span className="mr-1 text-xs text-slate-400">{project} ·</span>}
         <span className="text-sm font-medium text-white">{title}</span>
         {detail && <span className="ml-2 text-xs text-slate-300">{detail}</span>}

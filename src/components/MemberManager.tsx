@@ -56,6 +56,10 @@ export function MemberManager({
   onDeleteMember: (memberId: string) => void;
 }) {
   const { t, lang } = useI18n();
+  // スマホでは、メンバーごとの担当タスク・詳細を畳んでおく(開いているメンバーのid)
+  const [expandedIds, setExpandedIds] = useState<string[]>([]);
+  const toggleExpanded = (id: string) =>
+    setExpandedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draft, setDraft] = useState(emptyDraft);
@@ -137,7 +141,7 @@ export function MemberManager({
 
   return (
     <section>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">{t('membersHeading')}</h2>
           <p className="mt-1 text-xs text-slate-400">{t('membersIntroText')}</p>
@@ -276,10 +280,12 @@ export function MemberManager({
             const working = isWorkingNow(member);
             const workload = workloads.get(member.id);
             const workingDays = member.workingDays ?? DEFAULT_WORKING_DAYS;
+            const expanded = expandedIds.includes(member.id);
+            const taskCount = tasks.filter((task) => task.assigneeId === member.id).length;
             return (
               <li key={member.id} className="rounded-lg border border-slate-200 bg-white p-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
                     <p className="font-medium text-slate-900">
                       {member.name}
                       {member.role && <span className="ml-2 text-xs font-normal text-slate-400">{member.role}</span>}
@@ -302,14 +308,14 @@ export function MemberManager({
                         )}
                       </p>
                     )}
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className={`mt-1 text-xs text-slate-400 ${expanded ? '' : 'hidden sm:block'}`}>
                       {t('hourlyRateUsd')}: ${member.hourlyRateUsd ?? 0}/h
                       {member.localCurrencyCode && member.localHourlyRate != null && (
                         <> ({t('localRateReference')}: {member.localHourlyRate} {member.localCurrencyCode}/h)</>
                       )}
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="shrink-0 text-right">
                     <p className="text-2xl font-semibold tabular-nums text-slate-900">{nowHHmm}</p>
                     <p className="text-xs text-slate-500">{currentDateLabelInZone(member.timezone, lang === 'ja' ? 'ja-JP' : 'en-US')}</p>
                     <span
@@ -321,7 +327,16 @@ export function MemberManager({
                     </span>
                   </div>
                 </div>
-                <div className="mt-3 flex gap-2">
+                <div className="mt-3 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => toggleExpanded(member.id)}
+                    aria-expanded={expanded}
+                    className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-md border border-slate-200 px-3 py-2 text-left text-sm text-slate-600 sm:hidden"
+                  >
+                    <span className="min-w-0">{expanded ? t('memberHideDetails') : t('memberShowDetails', { n: taskCount })}</span>
+                    <span aria-hidden="true">{expanded ? '▲' : '▼'}</span>
+                  </button>
                   <button type="button" onClick={() => startEdit(member)} className="text-sm text-slate-500 hover:text-slate-900">
                     {t('edit')}
                   </button>
@@ -329,16 +344,18 @@ export function MemberManager({
                     {t('delete')}
                   </button>
                 </div>
-                <MemberTaskList
-                  memberId={member.id}
-                  heading={t('assignedTasks')}
-                  allTasks={tasks}
-                  setTasks={setTasks}
-                  projects={projects}
-                  glossary={glossary}
-                  onOpenTask={onOpenTask}
-                  onDeleteTask={onDeleteTask}
-                />
+                <div className={expanded ? '' : 'hidden sm:block'}>
+                  <MemberTaskList
+                    memberId={member.id}
+                    heading={t('assignedTasks')}
+                    allTasks={tasks}
+                    setTasks={setTasks}
+                    projects={projects}
+                    glossary={glossary}
+                    onOpenTask={onOpenTask}
+                    onDeleteTask={onDeleteTask}
+                  />
+                </div>
               </li>
             );
           })}

@@ -4,6 +4,7 @@ import { newId } from '../lib/storage';
 import { assignmentsForProject } from '../lib/workload';
 import { computeProjectBudget, formatUsd, simulateExtensionCost, type ProjectBudget } from '../lib/budget';
 import { todayISO } from '../lib/timezone';
+import { insertAt, type OfferUndo } from '../lib/listUtils';
 import type { Assignment, Member, Project, ProjectStatus, Task } from '../types';
 
 const STATUS_ORDER: ProjectStatus[] = ['planning', 'active', 'on-hold', 'done'];
@@ -40,6 +41,7 @@ export function ProjectsView({
   members,
   tasks,
   onDeleteProject,
+  onUndoable,
 }: {
   projects: Project[];
   setProjects: (updater: (prev: Project[]) => Project[]) => void;
@@ -48,6 +50,7 @@ export function ProjectsView({
   members: Member[];
   tasks: Task[];
   onDeleteProject: (projectId: string) => void;
+  onUndoable?: OfferUndo;
 }) {
   const { t } = useI18n();
   const [showForm, setShowForm] = useState(false);
@@ -117,11 +120,20 @@ export function ProjectsView({
     setAssignmentDraftFor(null);
   };
 
-  const removeAssignment = (id: string) => setAssignments((prev) => prev.filter((a) => a.id !== id));
+  // アサインの削除は、すぐ消えるが8秒間は「元に戻す」を出す(プロジェクト・メンバーの削除と同じ作り)
+  const removeAssignment = (id: string) => {
+    const index = assignments.findIndex((a) => a.id === id);
+    const target = assignments[index];
+    if (!target) return;
+    setAssignments((prev) => prev.filter((a) => a.id !== id));
+    onUndoable?.(t('undoAssignmentRemoved', { name: `${memberName(target.memberId)} · ${target.roleInProject}` }), () =>
+      setAssignments((prev) => insertAt(prev, index, target)),
+    );
+  };
 
   return (
     <section>
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
         <div>
           <h2 className="text-lg font-semibold text-slate-900">{t('projectsHeading')}</h2>
           <p className="mt-1 text-xs text-slate-400">{t('projectsIntro')}</p>
@@ -380,7 +392,7 @@ function BudgetPanel({ budget, totalBudgetUsd }: { budget: ProjectBudget | null;
         </span>
       </div>
 
-      <p className="mt-2 text-[11px] leading-relaxed text-slate-400">{t('budgetDisclaimer')}</p>
+      <p className="mt-2 text-xs sm:text-[11px] leading-relaxed text-slate-400">{t('budgetDisclaimer')}</p>
     </div>
   );
 }

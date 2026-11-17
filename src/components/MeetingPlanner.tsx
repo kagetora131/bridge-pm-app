@@ -14,6 +14,7 @@ import { computeBurdenHistory } from '../lib/meetingHistory';
 import { browserTimezone, formatHourLabel, todayISO } from '../lib/timezone';
 import { timezonesInUse } from '../lib/timezoneList';
 import { newId } from '../lib/storage';
+import type { OfferUndo } from '../lib/listUtils';
 import { RecurringMeetings } from './RecurringMeetings';
 import type { Assignment, Member, MeetingDecisionLogEntry, MeetingSlot, Project, RecurringMeeting } from '../types';
 
@@ -73,6 +74,7 @@ export function MeetingPlanner({
   meetingBurdenLog,
   setMeetingBurdenLog,
   defaultTimezone,
+  onUndoable,
 }: {
   members: Member[];
   projects: Project[];
@@ -82,6 +84,7 @@ export function MeetingPlanner({
   meetingBurdenLog: MeetingDecisionLogEntry[];
   setMeetingBurdenLog: (updater: (prev: MeetingDecisionLogEntry[]) => MeetingDecisionLogEntry[]) => void;
   defaultTimezone?: string;
+  onUndoable?: OfferUndo;
 }) {
   const { t, lang } = useI18n();
   const today = todayISO();
@@ -211,6 +214,7 @@ export function MeetingPlanner({
         setMeetings={setRecurringMeetings}
         members={members}
         defaultTimezone={defaultTimezone}
+        onUndoable={onUndoable}
       />
 
       <div className="mt-10 border-t border-slate-200 pt-6">
@@ -306,7 +310,7 @@ export function MeetingPlanner({
                     <span className="flex items-center gap-1.5 font-medium text-slate-800">
                       {dateISO.slice(5)} ({WEEKDAY_LABELS[lang][weekdayOfISO(dateISO)]})
                       {isBest && (
-                        <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] text-emerald-800">{t('recommendedDay')}</span>
+                        <span className="rounded-full bg-emerald-100 px-1.5 py-0.5 text-xs sm:text-[10px] text-emerald-800">{t('recommendedDay')}</span>
                       )}
                     </span>
                     <span className="mt-0.5 block text-slate-500">
@@ -324,7 +328,7 @@ export function MeetingPlanner({
         ) : (
           meetingWindow && (
             <div className="mt-6">
-              <div className="mb-1 flex text-[10px] text-slate-400">
+              <div className="mb-1 flex text-xs sm:text-[10px] text-slate-400">
                 {hourTicks.map((ms, idx) => (
                   <div key={idx} style={{ width: `${100 / (hourTicks.length - 1)}%` }} className="text-center first:text-left last:text-right">
                     {formatHourLabel(ms, displayTz)}
@@ -373,7 +377,7 @@ export function MeetingPlanner({
                         <div className="flex items-center justify-between">
                           <p className="font-medium text-slate-900">{t(CANDIDATE_LABEL_KEY[candidate.kind])}</p>
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                            className={`rounded-full px-2 py-0.5 text-xs sm:text-[10px] font-medium ${
                               candidate.fairnessScore >= 80
                                 ? 'bg-emerald-100 text-emerald-800'
                                 : candidate.fairnessScore >= 50
@@ -403,7 +407,7 @@ export function MeetingPlanner({
                                     {formatHourLabel(candidate.slot.startMs, member.timezone)}–{formatHourLabel(candidate.slot.endMs, member.timezone)}
                                   </span>
                                   {info.isOutside && (
-                                    <span className="rounded-full bg-rose-100 px-1.5 py-0.5 text-[10px] font-medium text-rose-700">
+                                    <span className="rounded-full bg-rose-100 px-1.5 py-0.5 text-xs sm:text-[10px] font-medium text-rose-700">
                                       {t('outsideBadgeShort')}
                                     </span>
                                   )}
