@@ -17,7 +17,7 @@ import { todayISO } from './timezone';
  * "today" — see seedDateShift.ts) get re-anchored to the current month
  * without anyone needing to remember to refresh the dummy data by hand.
  */
-const SEED_BASE_VERSION = '2026-09-24-progress-and-english-titles';
+const SEED_BASE_VERSION = '2026-11-17-fill-through-december';
 export const CURRENT_SEED_VERSION = `${SEED_BASE_VERSION}:${todayISO().slice(0, 7)}`;
 
 const VERSION_KEY = 'bridge-pm:seedVersion';
